@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Tabfolio"
+  },
+  "extensionShortName": {
+    "message": "Tabfolio"
+  },
+  "extensionDescription": {
+    "message": "A customizable new tab that presents your browser bookmarks in multiple layouts"
+  }
+}

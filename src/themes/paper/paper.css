@@ -1,0 +1,291 @@
+/*
+ * 「纸感」主题 —— 一张不透光的纸底，中间铺一张托住书签的纸，层次全靠色块的深浅，
+ * 没有毛玻璃、没有描边、几乎没有投影。
+ *
+ * 颜色的自变量只有三个(纸底 / 纸面 / 墨色，由 index.tsx 按纸色档位发过来),
+ * 其余一律是「墨色 × 透明度」压在纸上。深色方案里墨色本身是浅的，同一份 alpha
+ * 自然就变成浅色的分隔线和描边 —— 所以文件末尾的深色块只换那几个源头值。
+ */
+
+:root[data-theme='paper'] {
+  /* 浅色是默认档；深色只把这三行换成 -d 那组 */
+  --bnt-paper-ground: var(--bnt-paper-ground-l);
+  --bnt-paper-sheet: var(--bnt-paper-sheet-l);
+  --bnt-paper-ink: var(--bnt-paper-ink-l);
+
+  /* 纸几乎不投影，同一档全局阴影在这里只当别的主题的三成使 */
+  --bnt-shadow-ink: 0, 0, 0;
+  --bnt-shadow-depth: 1;
+  --bnt-shadow-a: calc(var(--bnt-shadow-k) * var(--bnt-shadow-depth));
+
+  --bnt-page-bg: var(--bnt-paper-ground);
+
+  /* 纸不采样底下的东西，三档模糊全部归零(还要连 backdrop-filter 一起关掉，见下) */
+  --bnt-blur: 0px;
+  --bnt-card-blur: 0px;
+  --bnt-block-blur: 0px;
+
+  --bnt-text: rgba(var(--bnt-paper-ink), 0.94);
+  --bnt-text-dim: rgba(var(--bnt-paper-ink), 0.56);
+  --bnt-text-faint: rgba(var(--bnt-paper-ink), 0.36);
+  --bnt-scrollbar: rgba(var(--bnt-paper-ink), 0.15);
+  --bnt-scrollbar-hover: rgba(var(--bnt-paper-ink), 0.28);
+
+  /* 弹层、按钮这些浮起来的东西和中间那张纸是同一种材质：实色纸面 */
+  --bnt-glass-bg: var(--bnt-paper-sheet);
+  --bnt-dialog-bg: var(--bnt-paper-sheet);
+  --bnt-glass-border: rgba(var(--bnt-paper-ink), 0.07);
+  /* 顶边高光是玻璃的语言，纸上不要 */
+  --bnt-sheen: transparent;
+
+  /* 卡片不是「另一张纸」，而是纸上印的一块浅色底 —— 深浅两套都成立 */
+  --bnt-card-bg: rgba(var(--bnt-paper-ink), 0.045);
+  --bnt-card-bg-hover: rgba(var(--bnt-paper-ink), 0.085);
+  --bnt-card-border: transparent;
+  --bnt-card-border-hover: transparent;
+  --bnt-block-bg: rgba(var(--bnt-paper-ink), 0.022);
+  --bnt-block-border: transparent;
+
+  --bnt-surface-hover: rgba(var(--bnt-paper-ink), 0.06);
+  --bnt-divider: rgba(var(--bnt-paper-ink), 0.09);
+  --bnt-dashed: rgba(var(--bnt-paper-ink), 0.2);
+
+  --bnt-field-bg: rgba(var(--bnt-paper-ink), 0.05);
+  --bnt-field-bg-focus: var(--bnt-paper-sheet);
+  /* 输入框平时没有边，聚焦时那一圈主题色由 base.css 换上来 */
+  --bnt-field-border: transparent;
+
+  --bnt-seg-bg: rgba(var(--bnt-paper-ink), 0.06);
+  --bnt-seg-on: var(--bnt-paper-sheet);
+  --bnt-seg-shadow: rgba(var(--bnt-shadow-ink), calc(0.09 * var(--bnt-shadow-a)));
+  --bnt-switch-off: rgba(var(--bnt-paper-ink), 0.18);
+  --bnt-swatch-shadow: rgba(var(--bnt-shadow-ink), calc(0.11 * var(--bnt-shadow-a)));
+  --bnt-track: rgba(var(--bnt-paper-ink), 0.14);
+  --bnt-thumb-border: rgba(var(--bnt-paper-ink), 0.14);
+  --bnt-scrim: rgba(0, 0, 0, 0.26);
+
+  --bnt-folder-glyph: rgba(var(--bnt-paper-ink), 0.6);
+
+  --bnt-danger: #c0392b;
+  --bnt-danger-border: rgba(192, 57, 43, 0.24);
+  --bnt-danger-soft: rgba(192, 57, 43, 0.08);
+
+  --bnt-shadow-panel: 0 1px 3px rgba(var(--bnt-shadow-ink), calc(0.04 * var(--bnt-shadow-a))),
+    0 10px 30px rgba(var(--bnt-shadow-ink), calc(0.055 * var(--bnt-shadow-a)));
+  /* 卡片是印在纸上的，不投影；写成透明而不是 none —— base.css 那条是复合阴影，
+     里面掺一个 none 会让整条声明失效 */
+  --bnt-shadow-card: 0 0 0 rgba(0, 0, 0, 0);
+  --bnt-shadow-card-hover: 0 0 0 rgba(0, 0, 0, 0);
+  --bnt-shadow-float: 0 2px 8px rgba(var(--bnt-shadow-ink), calc(0.055 * var(--bnt-shadow-a))),
+    0 20px 50px rgba(var(--bnt-shadow-ink), calc(0.15 * var(--bnt-shadow-a)));
+}
+
+/* ---------- 纸底 ---------- */
+
+/*
+ * 盖在壁纸上的那张纸。浓度 100% 就是完全不透光的纯色底(默认)，调低则让壁纸透上来。
+ * 和 acrylic 一样用伪元素：.bnt-app 自己是 z-index:1 的层叠上下文，伪元素的 -1
+ * 只压在它自己的内容之下，仍然盖得住 z-index:0 的 .bnt-bg。
+ */
+.bnt-paper-layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--bnt-paper-ground);
+  opacity: var(--bnt-paper-wash);
+}
+
+:root[data-theme='paper'] .bnt-app {
+  padding: 18px 20px;
+  gap: 6px;
+}
+
+/* ---------- 材质：所有毛玻璃都退回实色 ---------- */
+
+:root[data-theme='paper'] .bnt-glass,
+:root[data-theme='paper'] .bnt-card,
+:root[data-theme='paper'] .bnt-folder-block,
+:root[data-theme='paper'] .bnt-iconbtn-lg,
+:root[data-theme='paper'] .bnt-handle,
+:root[data-theme='paper'] .bnt-panel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* 两侧的栏不是浮在纸上的面板，它们就是纸的一部分 */
+:root[data-theme='paper'] .bnt-panel {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* 这两个会同时压在纸底和白纸上，描边得比别处重一档才不至于在白纸上消失 */
+:root[data-theme='paper'] .bnt-iconbtn-lg,
+:root[data-theme='paper'] .bnt-handle {
+  border-color: rgba(var(--bnt-paper-ink), 0.13);
+  box-shadow: var(--bnt-shadow-panel);
+}
+
+/* ---------- 中间：问候语 + 一张纸 ---------- */
+
+.bnt-paper-stage {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* 「内容上移」在这里推整块中间区域，而不是分别推标题和内容 —— 见下面两条覆盖 */
+  padding-top: var(--bnt-content-top);
+}
+
+.bnt-paper-greeting {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 0 20px;
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--bnt-text);
+}
+
+/*
+ * 内容区整块变成一张纸：标题、面包屑、卡片都在纸里面。
+ * 高度改成按内容撑开(上限一屏)，纸就会随书签多少收放，而不是永远铺满整屏。
+ */
+:root[data-theme='paper'] .bnt-content {
+  height: auto;
+  max-height: 100%;
+  gap: 10px;
+  padding: 14px 16px 16px;
+  border-radius: var(--bnt-radius-panel);
+  background: var(--bnt-paper-sheet);
+  box-shadow: var(--bnt-shadow-panel);
+}
+
+:root[data-theme='paper'] .bnt-title-row {
+  transform: none;
+}
+
+:root[data-theme='paper'] .bnt-body {
+  flex: 0 1 auto;
+  margin-top: 0;
+  /* 空目录时纸会缩成一条，给空状态(绝对定位)留出地方 */
+  min-height: 128px;
+}
+
+/* 纸自己有内边距，滚动区就不必再靠负 margin 去偷边上那几个像素 */
+:root[data-theme='paper'] .bnt-scroll {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 2px 2px 6px;
+}
+
+:root[data-theme='paper'] .bnt-header {
+  padding: 2px 2px 0;
+}
+
+:root[data-theme='paper'] .bnt-title {
+  font-size: 20px;
+}
+
+/* 面包屑做成一串灰底胶囊，当前目录那颗是实的 */
+:root[data-theme='paper'] .bnt-title-crumb:not(.is-current) > button {
+  padding: 5px 11px;
+  margin: -5px 0;
+  border-radius: 999px;
+  font-size: 15px;
+  background: rgba(var(--bnt-paper-ink), 0.05);
+}
+:root[data-theme='paper'] .bnt-title-crumb.is-current > button {
+  padding: 5px 4px;
+}
+/* 分隔符换成 ›：字号归零掐掉原来的空格，符号交给伪元素画 */
+:root[data-theme='paper'] .bnt-title-separator {
+  font-size: 0;
+}
+:root[data-theme='paper'] .bnt-title-separator::after {
+  content: '›';
+  font-size: 16px;
+  padding: 0 5px;
+}
+
+/* ---------- 卡片：印上去的一块色，不是浮起来的一层 ---------- */
+
+:root[data-theme='paper'] .bnt-card:hover {
+  transform: none;
+}
+:root[data-theme='paper'] .bnt-card:active {
+  transform: scale(0.985);
+}
+/* 拖起来的那张是真的离开了纸面：给它实色底和投影，免得半透明糊在下面的内容上 */
+:root[data-theme='paper'] .bnt-card.is-overlay {
+  transform: scale(1.03) rotate(-1deg);
+  background-color: var(--bnt-paper-sheet);
+  box-shadow: var(--bnt-shadow-float);
+}
+
+:root[data-theme='paper'] .bnt-folder-block {
+  padding: 9px;
+  border-radius: calc(var(--bnt-radius-panel) * 0.8);
+}
+
+/* 空状态那块占位方片在白纸上要是块色，不能是一圈几乎看不见的描边 */
+:root[data-theme='paper'] .bnt-empty-mark {
+  background: rgba(var(--bnt-paper-ink), 0.06);
+  border: 0;
+}
+
+/* ---------- 侧栏 ---------- */
+
+/* 品牌那一行挪到顶上去：纸感的左栏是「标识 + 搜索 + 目录」自上而下的一列 */
+:root[data-theme='paper'] .bnt-sidebar-foot {
+  order: -1;
+  padding: 0 4px 4px;
+  border-top: 0;
+}
+:root[data-theme='paper'] .bnt-brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* 选中的目录是一颗实心主题色胶囊 —— 整个界面里唯一的一块饱和色 */
+:root[data-theme='paper'] .bnt-tree-item.is-active {
+  box-shadow: 0 2px 8px var(--bnt-accent-glow);
+}
+
+/* ---------- 深色方案 ---------- */
+
+/*
+ * 只换三个源头色 + 两处必须跟着走的东西：压暗遮罩和危险色。
+ * 投影在深色底上要重一档，否则弹层和背景完全糊在一起。
+ */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='paper']:not([data-scheme='light']) {
+    --bnt-paper-ground: var(--bnt-paper-ground-d);
+    --bnt-paper-sheet: var(--bnt-paper-sheet-d);
+    --bnt-paper-ink: var(--bnt-paper-ink-d);
+    --bnt-shadow-depth: 2;
+    --bnt-scrim: rgba(0, 0, 0, 0.5);
+    --bnt-danger: #ff7a6b;
+    --bnt-danger-border: rgba(255, 122, 107, 0.3);
+    --bnt-danger-soft: rgba(255, 122, 107, 0.12);
+  }
+}
+
+:root[data-theme='paper'][data-scheme='dark'] {
+  --bnt-paper-ground: var(--bnt-paper-ground-d);
+  --bnt-paper-sheet: var(--bnt-paper-sheet-d);
+  --bnt-paper-ink: var(--bnt-paper-ink-d);
+  --bnt-shadow-depth: 2;
+  --bnt-scrim: rgba(0, 0, 0, 0.5);
+  --bnt-danger: #ff7a6b;
+  --bnt-danger-border: rgba(255, 122, 107, 0.3);
+  --bnt-danger-soft: rgba(255, 122, 107, 0.12);
+}

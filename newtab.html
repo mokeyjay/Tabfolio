@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 脚本执行前的兜底标题，真正的本地化标题由 src/i18n 设置 -->
+    <title>New Tab</title>
+    <style>
+      /* 首屏底色内联,避免新标签页打开瞬间闪白 */
+      html, body { margin: 0; height: 100%; background: #e9eff8; }
+      @media (prefers-color-scheme: dark) { html, body { background: #10141c; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

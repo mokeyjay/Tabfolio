@@ -1,0 +1,485 @@
+/*
+ * 「列栏」主题 —— 用 Miller Columns 同时保留多级目录上下文。
+ * 列宽、行密度和整体最大宽度沿用框架设置，主题只决定纸面色调与覆盖浓度。
+ */
+
+:root[data-theme='columns'] {
+  --bnt-columns-ground: var(--bnt-columns-ground-l);
+  --bnt-columns-sheet: var(--bnt-columns-sheet-l);
+  --bnt-columns-ink: var(--bnt-columns-ink-l);
+
+  --bnt-page-bg: var(--bnt-columns-ground);
+  --bnt-text: rgba(var(--bnt-columns-ink), 0.94);
+  --bnt-text-dim: rgba(var(--bnt-columns-ink), 0.66);
+  /* 域名与数量字号很小，比设计稿略微收实以避免在浅色壁纸上发虚。 */
+  --bnt-text-faint: rgba(var(--bnt-columns-ink), 0.52);
+  --bnt-scrollbar: rgba(var(--bnt-columns-ink), 0.13);
+  --bnt-scrollbar-hover: rgba(var(--bnt-columns-ink), 0.25);
+
+  --bnt-blur: 0px;
+  --bnt-card-blur: 0px;
+  --bnt-block-blur: 0px;
+  --bnt-glass-bg: rgba(var(--bnt-columns-sheet), 0.97);
+  --bnt-dialog-bg: rgb(var(--bnt-columns-sheet));
+  --bnt-glass-border: rgba(var(--bnt-columns-ink), 0.11);
+  --bnt-sheen: transparent;
+
+  --bnt-card-bg: rgba(var(--bnt-columns-sheet), 0.96);
+  --bnt-card-bg-hover: rgb(var(--bnt-columns-sheet));
+  --bnt-card-border: rgba(var(--bnt-columns-ink), 0.08);
+  --bnt-card-border-hover: rgba(var(--bnt-columns-ink), 0.14);
+  --bnt-block-bg: rgba(var(--bnt-columns-ink), 0.025);
+  --bnt-block-border: transparent;
+
+  --bnt-surface-hover: rgba(var(--bnt-columns-ink), 0.06);
+  --bnt-divider: rgba(var(--bnt-columns-ink), 0.11);
+  --bnt-dashed: rgba(var(--bnt-columns-ink), 0.22);
+  --bnt-field-bg: rgba(var(--bnt-columns-ink), 0.055);
+  --bnt-field-bg-focus: rgba(var(--bnt-columns-ink), 0.085);
+  --bnt-field-border: transparent;
+  --bnt-seg-bg: rgba(var(--bnt-columns-ink), 0.07);
+  --bnt-seg-on: rgb(var(--bnt-columns-sheet));
+  --bnt-switch-off: rgba(var(--bnt-columns-ink), 0.2);
+  --bnt-track: rgba(var(--bnt-columns-ink), 0.15);
+  --bnt-thumb-border: rgba(var(--bnt-columns-ink), 0.14);
+  --bnt-scrim: rgba(0, 0, 0, 0.28);
+  --bnt-folder-glyph: rgba(var(--bnt-columns-ink), 0.58);
+
+  --bnt-danger: #b3402f;
+  --bnt-danger-border: rgba(179, 64, 47, 0.24);
+  --bnt-danger-soft: rgba(179, 64, 47, 0.08);
+
+  --bnt-shadow-ink: 0, 0, 0;
+  --bnt-shadow-depth: 0.8;
+  --bnt-shadow-a: calc(var(--bnt-shadow-k) * var(--bnt-shadow-depth));
+  --bnt-seg-shadow: rgba(var(--bnt-shadow-ink), calc(0.1 * var(--bnt-shadow-a)));
+  --bnt-swatch-shadow: rgba(var(--bnt-shadow-ink), calc(0.1 * var(--bnt-shadow-a)));
+  --bnt-shadow-panel: 0 1px 3px rgba(var(--bnt-shadow-ink), calc(0.05 * var(--bnt-shadow-a))),
+    0 14px 38px rgba(var(--bnt-shadow-ink), calc(0.12 * var(--bnt-shadow-a)));
+  --bnt-shadow-card: 0 1px 2px rgba(var(--bnt-shadow-ink), calc(0.04 * var(--bnt-shadow-a)));
+  --bnt-shadow-card-hover: 0 3px 10px rgba(var(--bnt-shadow-ink), calc(0.08 * var(--bnt-shadow-a)));
+  --bnt-shadow-float: 0 4px 14px rgba(var(--bnt-shadow-ink), calc(0.09 * var(--bnt-shadow-a))),
+    0 24px 60px rgba(var(--bnt-shadow-ink), calc(0.14 * var(--bnt-shadow-a)));
+
+  /* 公共卡片尺寸在列栏中分别解释为列宽和紧凑行高。 */
+  --bnt-columns-row-h: max(32px, calc(var(--bnt-card-h) * 0.55));
+}
+
+:root[data-theme='columns'] .bnt-columns-layout {
+  display: block;
+  padding: 0;
+}
+
+.bnt-columns-layout::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--bnt-columns-ground);
+  opacity: 0.35;
+}
+
+.bnt-columns-shell {
+  width: 100%;
+  max-width: var(--bnt-max-w);
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(var(--bnt-columns-sheet), var(--bnt-columns-surface-a));
+  border-inline: 1px solid var(--bnt-divider);
+  box-shadow: var(--bnt-shadow-panel);
+}
+
+.bnt-columns-toolbar {
+  flex: none;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px 9px 20px;
+  background: rgba(var(--bnt-columns-sheet), var(--bnt-columns-header-a));
+  border-bottom: 1px solid var(--bnt-divider);
+}
+
+.bnt-columns-brand {
+  flex: none;
+  color: var(--bnt-text);
+  font-size: 13.5px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.bnt-columns-brand:hover {
+  color: var(--bnt-accent);
+}
+
+.bnt-columns-crumbs {
+  flex: 1;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.bnt-columns-crumbs span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.bnt-columns-crumbs i {
+  flex: none;
+  color: var(--bnt-text-faint);
+  font-size: 13px;
+  font-style: normal;
+}
+.bnt-columns-crumbs button {
+  overflow: hidden;
+  color: var(--bnt-text-dim);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bnt-columns-crumbs button:hover {
+  color: var(--bnt-accent);
+}
+.bnt-columns-crumbs [aria-current='page'] {
+  color: var(--bnt-text);
+  font-weight: 550;
+}
+
+.bnt-columns-search-wrap {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bnt-columns-search {
+  width: 220px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border-radius: var(--bnt-radius-ctl);
+  background: var(--bnt-field-bg);
+  color: var(--bnt-text-faint);
+  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.bnt-columns-search:focus-within {
+  color: var(--bnt-accent);
+  background: var(--bnt-field-bg-focus);
+  box-shadow: 0 0 0 1px var(--bnt-accent);
+}
+.bnt-columns-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--bnt-text);
+  font-size: 13.5px;
+}
+.bnt-columns-search input::placeholder {
+  color: var(--bnt-text-faint);
+}
+.bnt-columns-search button {
+  color: var(--bnt-text-faint);
+}
+.bnt-columns-search button:hover {
+  color: var(--bnt-text);
+}
+.bnt-columns-scope {
+  flex: none;
+}
+.bnt-columns-scope .bnt-scope-item {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.bnt-columns-settings {
+  width: 32px;
+  height: 32px;
+}
+:root[data-theme='columns'] .bnt-columns-toolbar .bnt-display-trigger {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.bnt-columns-rail {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  background: rgba(var(--bnt-columns-sheet), var(--bnt-columns-surface-a));
+}
+
+.bnt-columns-column {
+  position: relative;
+  flex: none;
+  width: var(--bnt-column-w, 272px);
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: end;
+  border-left: 1px solid var(--bnt-divider);
+}
+
+.bnt-columns-resizer {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  bottom: 0;
+  z-index: 6;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.bnt-columns-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+  background: transparent;
+  transition: background 0.14s ease;
+}
+.bnt-columns-resizer:hover::after,
+.bnt-columns-resizer:focus-visible::after,
+.bnt-columns-resizer.is-resizing::after {
+  background: var(--bnt-accent);
+}
+.bnt-columns-resizer:focus-visible {
+  outline: none;
+}
+.bnt-columns-column:first-child {
+  border-left: 0;
+}
+.bnt-columns-column.is-search {
+  width: min(520px, 100vw);
+}
+
+.bnt-columns-column-head {
+  flex: none;
+  min-height: 40px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 11px 14px 9px;
+  border-bottom: 1px solid var(--bnt-divider);
+}
+.bnt-columns-column-head strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--bnt-text-dim);
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bnt-columns-column-head span {
+  color: var(--bnt-text-faint);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bnt-columns-column-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.bnt-columns-column-body.is-drop-into {
+  background: var(--bnt-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--bnt-accent);
+}
+
+.bnt-columns-row {
+  position: relative;
+  min-height: var(--bnt-columns-row-h);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 9px;
+  border-radius: var(--bnt-radius-ctl);
+  color: var(--bnt-text);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.13s ease, background 0.13s ease, opacity 0.13s ease;
+}
+.bnt-columns-row:hover {
+  background: var(--bnt-surface-hover);
+}
+.bnt-columns-row.is-selected {
+  background: var(--bnt-accent);
+  color: #fff;
+}
+.bnt-columns-row.is-dragging {
+  opacity: 0.24;
+}
+.bnt-columns-row.is-drop-before::before,
+.bnt-columns-row.is-drop-after::after {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--bnt-accent);
+}
+.bnt-columns-row.is-drop-before::before {
+  top: -1px;
+}
+.bnt-columns-row.is-drop-after::after {
+  bottom: -1px;
+}
+.bnt-columns-row-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bnt-columns-row[role='button'] .bnt-columns-row-title {
+  font-weight: 550;
+}
+.bnt-columns-row > svg {
+  flex: none;
+  color: var(--bnt-text-faint);
+}
+.bnt-columns-row.is-selected > svg,
+.bnt-columns-row.is-selected .bnt-icon.is-folder {
+  color: rgba(255, 255, 255, 0.82);
+}
+.bnt-columns-domain {
+  max-width: 44%;
+  overflow: hidden;
+  color: var(--bnt-text-faint);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bnt-columns-row.is-selected .bnt-columns-domain {
+  color: rgba(255, 255, 255, 0.76);
+}
+.bnt-columns-row-drop {
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.bnt-columns-row-drop.is-over {
+  z-index: 0;
+  background: var(--bnt-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--bnt-accent);
+}
+.bnt-columns-row > :not(.bnt-columns-row-drop) {
+  position: relative;
+  z-index: 1;
+}
+
+.bnt-columns-empty,
+.bnt-columns-search-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 24px 12px;
+  color: var(--bnt-text-faint);
+  font-size: 13px;
+  text-align: center;
+}
+.bnt-columns-search-empty strong {
+  color: var(--bnt-text-dim);
+  font-size: 14px;
+  font-weight: 550;
+}
+
+/* 列栏本身不做毛玻璃采样，弹层保持实色以保证密集设置项可读。 */
+:root[data-theme='columns'] .bnt-glass,
+:root[data-theme='columns'] .bnt-iconbtn-lg {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@media (max-width: 760px) {
+  .bnt-columns-toolbar {
+    min-height: 96px;
+    align-content: center;
+    flex-wrap: wrap;
+    gap: 6px 9px;
+    padding: 8px 10px;
+  }
+  .bnt-columns-brand {
+    order: 1;
+  }
+  .bnt-columns-crumbs {
+    order: 2;
+  }
+  .bnt-columns-toolbar > .bnt-display-menu {
+    order: 3;
+  }
+  .bnt-columns-settings {
+    order: 4;
+  }
+  .bnt-columns-search-wrap {
+    order: 5;
+    width: 100%;
+  }
+  .bnt-columns-search {
+    flex: 1;
+    width: auto;
+  }
+  .bnt-columns-scope .bnt-scope-item span {
+    display: none;
+  }
+  .bnt-columns-column {
+    width: min(var(--bnt-column-w, 272px), calc(100vw - 28px));
+    scroll-snap-align: start;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='columns']:not([data-scheme='light']) {
+    --bnt-columns-ground: var(--bnt-columns-ground-d);
+    --bnt-columns-sheet: var(--bnt-columns-sheet-d);
+    --bnt-columns-ink: var(--bnt-columns-ink-d);
+    --bnt-shadow-depth: 1.15;
+    --bnt-scrim: rgba(0, 0, 0, 0.52);
+    --bnt-danger: #ff8f7e;
+    --bnt-danger-border: rgba(255, 143, 126, 0.3);
+    --bnt-danger-soft: rgba(255, 143, 126, 0.12);
+  }
+}
+
+:root[data-theme='columns'][data-scheme='dark'] {
+  --bnt-columns-ground: var(--bnt-columns-ground-d);
+  --bnt-columns-sheet: var(--bnt-columns-sheet-d);
+  --bnt-columns-ink: var(--bnt-columns-ink-d);
+  --bnt-shadow-depth: 1.15;
+  --bnt-scrim: rgba(0, 0, 0, 0.52);
+  --bnt-danger: #ff8f7e;
+  --bnt-danger-border: rgba(255, 143, 126, 0.3);
+  --bnt-danger-soft: rgba(255, 143, 126, 0.12);
+}

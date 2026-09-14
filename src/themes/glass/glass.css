@@ -1,0 +1,154 @@
+/*
+ * 「毛玻璃」主题 —— 参照 macOS 26 之前的 vibrancy：半透明底色 + 大半径背景模糊 +
+ * 提高饱和度让底下的壁纸透出颜色，再加一道 1px 的顶部高光和两层柔和投影。
+ *
+ * 侧栏 / 书签卡片 / 子目录区块各有一组透明度与模糊度，由 index.tsx 算成
+ *   --bnt-panel-a / --bnt-panel-blur、--bnt-card-a / --bnt-card-blur、
+ *   --bnt-block-a / --bnt-block-blur
+ * 挂在 :root 上；这里所有面板色都是「底色 × 不透明度」的组合，所以明暗方案只需要
+ * 换 --bnt-tint 和文字色，不必重复一遍透明度逻辑。
+ */
+
+:root {
+  --bnt-tint: 255, 255, 255;
+  --bnt-page-bg: #e9eff8;
+  /* 面板和弹层共用这一档模糊 —— 两者是同一种材质 */
+  --bnt-blur: var(--bnt-panel-blur);
+
+  --bnt-text: #1d1d1f;
+  --bnt-text-dim: rgba(60, 60, 67, 0.62);
+  --bnt-text-faint: rgba(60, 60, 67, 0.42);
+  --bnt-scrollbar: rgba(60, 60, 67, 0.2);
+  --bnt-scrollbar-hover: rgba(60, 60, 67, 0.34);
+
+  /* 面板 / 弹层 */
+  --bnt-glass-bg: rgba(var(--bnt-tint), var(--bnt-panel-a));
+  /* 只给色块的选中环当间隔色用 —— 那一圈得是实色，不能跟着面板一起变透 */
+  --bnt-dialog-bg: rgba(var(--bnt-tint), 0.94);
+  --bnt-glass-border: rgba(255, 255, 255, 0.55);
+  /* 顶边那道高光是 Apple 毛玻璃最容易被漏掉、但最像的一笔 */
+  --bnt-sheen: rgba(255, 255, 255, 0.65);
+
+  --bnt-card-bg: rgba(var(--bnt-tint), var(--bnt-card-a));
+  --bnt-card-bg-hover: rgba(var(--bnt-tint), min(1, var(--bnt-card-a) * 1.28));
+  --bnt-card-border: rgba(255, 255, 255, 0.5);
+  --bnt-card-border-hover: rgba(255, 255, 255, 0.85);
+  --bnt-block-bg: rgba(var(--bnt-tint), var(--bnt-block-a));
+  --bnt-block-border: rgba(255, 255, 255, 0.34);
+
+  --bnt-surface-hover: rgba(var(--bnt-tint), min(1, var(--bnt-panel-a) * 0.72));
+  --bnt-divider: rgba(0, 0, 0, 0.07);
+  --bnt-dashed: rgba(60, 60, 67, 0.26);
+
+  /* 输入类控件比面板更实一点，才有「可以往里写字」的分量 */
+  --bnt-field-bg: rgba(255, 255, 255, 0.55);
+  --bnt-field-bg-focus: rgba(255, 255, 255, 0.9);
+  --bnt-field-border: rgba(0, 0, 0, 0.09);
+
+  --bnt-seg-bg: rgba(120, 130, 150, 0.14);
+  --bnt-seg-on: rgba(255, 255, 255, 0.96);
+  --bnt-seg-shadow: rgba(var(--bnt-shadow-ink), calc(0.16 * var(--bnt-shadow-a)));
+  --bnt-switch-off: rgba(60, 60, 67, 0.2);
+  --bnt-switch-on: #34c759;
+  --bnt-swatch-shadow: rgba(var(--bnt-shadow-ink), calc(0.22 * var(--bnt-shadow-a)));
+  --bnt-track: rgba(120, 130, 150, 0.26);
+  --bnt-thumb-border: rgba(0, 0, 0, 0.1);
+  --bnt-scrim: rgba(22, 34, 56, 0.18);
+
+  --bnt-folder-tint: rgba(255, 255, 255, 0.82);
+  --bnt-folder-glyph: rgba(60, 60, 67, 0.6);
+
+  --bnt-danger: #d0021b;
+  --bnt-danger-border: rgba(208, 2, 27, 0.22);
+  --bnt-danger-soft: rgba(208, 2, 27, 0.07);
+
+  /*
+   * 圆角是全局设置(App.tsx 挂 --bnt-radius-*)，主题不再自己定；阴影这边只出配方 ——
+   * 投影色 --bnt-shadow-ink 和相对浓度 --bnt-shadow-depth 是主题的事，整体浓淡
+   * 由全局滑块的 --bnt-shadow-k 统一缩放，两者的乘积就是 --bnt-shadow-a。
+   */
+  --bnt-shadow-ink: 16, 42, 80;
+  --bnt-shadow-depth: 1;
+  --bnt-shadow-a: calc(var(--bnt-shadow-k) * var(--bnt-shadow-depth));
+  --bnt-shadow-panel: 0 1px 2px rgba(var(--bnt-shadow-ink), calc(0.05 * var(--bnt-shadow-a))),
+    0 12px 30px rgba(var(--bnt-shadow-ink), calc(0.09 * var(--bnt-shadow-a)));
+  --bnt-shadow-card: 0 1px 2px rgba(var(--bnt-shadow-ink), calc(0.05 * var(--bnt-shadow-a)));
+  --bnt-shadow-card-hover: 0 8px 20px rgba(var(--bnt-shadow-ink), calc(0.13 * var(--bnt-shadow-a)));
+  --bnt-shadow-float: 0 2px 6px rgba(var(--bnt-shadow-ink), calc(0.1 * var(--bnt-shadow-a))),
+    0 24px 60px rgba(var(--bnt-shadow-ink), calc(0.22 * var(--bnt-shadow-a)));
+}
+
+/* 深色方案：只换底色与文字，透明度/模糊沿用同一套变量 */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='glass']:not([data-scheme='light']) {
+    --bnt-tint: 32, 37, 49;
+    --bnt-page-bg: #10141c;
+    --bnt-text: #f2f4f8;
+    --bnt-text-dim: rgba(235, 240, 250, 0.6);
+    --bnt-text-faint: rgba(235, 240, 250, 0.38);
+    --bnt-scrollbar: rgba(235, 240, 250, 0.18);
+    --bnt-scrollbar-hover: rgba(235, 240, 250, 0.32);
+    --bnt-glass-border: rgba(255, 255, 255, 0.1);
+    --bnt-sheen: rgba(255, 255, 255, 0.09);
+    --bnt-dialog-bg: rgba(var(--bnt-tint), 0.94);
+    --bnt-card-border-hover: rgba(255, 255, 255, 0.18);
+    --bnt-track: rgba(255, 255, 255, 0.16);
+    --bnt-thumb-border: rgba(0, 0, 0, 0.4);
+
+    --bnt-card-border: rgba(255, 255, 255, 0.08);
+    --bnt-block-border: rgba(255, 255, 255, 0.06);
+    --bnt-divider: rgba(255, 255, 255, 0.1);
+    --bnt-dashed: rgba(235, 240, 250, 0.26);
+    --bnt-field-bg: rgba(255, 255, 255, 0.06);
+    --bnt-field-bg-focus: rgba(255, 255, 255, 0.12);
+    --bnt-field-border: rgba(255, 255, 255, 0.12);
+    --bnt-seg-bg: rgba(0, 0, 0, 0.28);
+    --bnt-seg-on: rgba(255, 255, 255, 0.17);
+    --bnt-switch-off: rgba(235, 240, 250, 0.22);
+    --bnt-scrim: rgba(4, 8, 16, 0.42);
+    --bnt-folder-tint: rgba(255, 255, 255, 0.13);
+    --bnt-folder-glyph: rgba(235, 240, 250, 0.72);
+    --bnt-danger: #ff6b6b;
+    --bnt-danger-border: rgba(255, 107, 107, 0.3);
+    --bnt-danger-soft: rgba(255, 107, 107, 0.12);
+    /* 深色底上同一份配方要重一档，不然弹层和背景直接糊在一起 */
+    --bnt-shadow-ink: 0, 0, 0;
+    --bnt-shadow-depth: 3;
+  }
+}
+
+:root[data-theme='glass'][data-scheme='dark'] {
+  --bnt-tint: 32, 37, 49;
+  --bnt-page-bg: #10141c;
+  --bnt-text: #f2f4f8;
+  --bnt-text-dim: rgba(235, 240, 250, 0.6);
+  --bnt-text-faint: rgba(235, 240, 250, 0.38);
+  --bnt-scrollbar: rgba(235, 240, 250, 0.18);
+  --bnt-scrollbar-hover: rgba(235, 240, 250, 0.32);
+  --bnt-glass-border: rgba(255, 255, 255, 0.1);
+  --bnt-sheen: rgba(255, 255, 255, 0.09);
+  --bnt-dialog-bg: rgba(var(--bnt-tint), 0.94);
+  --bnt-card-border-hover: rgba(255, 255, 255, 0.18);
+  --bnt-track: rgba(255, 255, 255, 0.16);
+  --bnt-thumb-border: rgba(0, 0, 0, 0.4);
+
+  --bnt-card-border: rgba(255, 255, 255, 0.08);
+  --bnt-block-border: rgba(255, 255, 255, 0.06);
+  --bnt-divider: rgba(255, 255, 255, 0.1);
+  --bnt-dashed: rgba(235, 240, 250, 0.26);
+  --bnt-field-bg: rgba(255, 255, 255, 0.06);
+  --bnt-field-bg-focus: rgba(255, 255, 255, 0.12);
+  --bnt-field-border: rgba(255, 255, 255, 0.12);
+  --bnt-seg-bg: rgba(0, 0, 0, 0.28);
+  --bnt-seg-on: rgba(255, 255, 255, 0.17);
+  --bnt-switch-off: rgba(235, 240, 250, 0.22);
+  --bnt-scrim: rgba(4, 8, 16, 0.42);
+  --bnt-folder-tint: rgba(255, 255, 255, 0.13);
+  --bnt-folder-glyph: rgba(235, 240, 250, 0.72);
+  --bnt-danger: #ff6b6b;
+  --bnt-danger-border: rgba(255, 107, 107, 0.3);
+  --bnt-danger-soft: rgba(255, 107, 107, 0.12);
+  /* 深色底上同一份配方要重一档，不然弹层和背景直接糊在一起 */
+  --bnt-shadow-ink: 0, 0, 0;
+  --bnt-shadow-depth: 3;
+}

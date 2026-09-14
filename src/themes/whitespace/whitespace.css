@@ -1,0 +1,447 @@
+/*
+ * 「留白」主题 —— 不用面板和卡片分层，信息层级只靠留白、细线与轻微悬停底色。
+ * 壁纸、压暗、内容宽度和顶部位置继续走框架公共设置；主题只提供纸色倾向。
+ */
+
+:root[data-theme='whitespace'] {
+  --bnt-whitespace-ground: var(--bnt-whitespace-ground-l);
+  --bnt-whitespace-sheet: var(--bnt-whitespace-sheet-l);
+  --bnt-whitespace-ink: var(--bnt-whitespace-ink-l);
+
+  --bnt-page-bg: var(--bnt-whitespace-ground);
+  --bnt-text: rgba(var(--bnt-whitespace-ink), 0.94);
+  /* 设计稿的 0.54 / 0.34 在浅色壁纸上对比度不足，略微收实以保证小字可读。 */
+  --bnt-text-dim: rgba(var(--bnt-whitespace-ink), 0.66);
+  --bnt-text-faint: rgba(var(--bnt-whitespace-ink), 0.48);
+  --bnt-scrollbar: rgba(var(--bnt-whitespace-ink), 0.12);
+  --bnt-scrollbar-hover: rgba(var(--bnt-whitespace-ink), 0.24);
+
+  /* 主页面没有材质层；弹窗仍要有足够实的纸面，保证设置可读。 */
+  --bnt-blur: 0px;
+  --bnt-card-blur: 0px;
+  --bnt-block-blur: 0px;
+  --bnt-glass-bg: rgba(var(--bnt-whitespace-sheet), 0.96);
+  --bnt-dialog-bg: rgb(var(--bnt-whitespace-sheet));
+  --bnt-glass-border: rgba(var(--bnt-whitespace-ink), 0.1);
+  --bnt-sheen: transparent;
+
+  --bnt-card-bg: rgba(var(--bnt-whitespace-sheet), 0.96);
+  --bnt-card-bg-hover: rgb(var(--bnt-whitespace-sheet));
+  --bnt-card-border: rgba(var(--bnt-whitespace-ink), 0.08);
+  --bnt-card-border-hover: rgba(var(--bnt-whitespace-ink), 0.14);
+  --bnt-block-bg: rgba(var(--bnt-whitespace-ink), 0.025);
+  --bnt-block-border: transparent;
+
+  --bnt-surface-hover: rgba(var(--bnt-whitespace-ink), 0.055);
+  --bnt-divider: rgba(var(--bnt-whitespace-ink), 0.1);
+  --bnt-dashed: rgba(var(--bnt-whitespace-ink), 0.2);
+  --bnt-field-bg: rgba(var(--bnt-whitespace-ink), 0.045);
+  --bnt-field-bg-focus: rgba(var(--bnt-whitespace-ink), 0.07);
+  --bnt-field-border: transparent;
+  --bnt-seg-bg: rgba(var(--bnt-whitespace-ink), 0.06);
+  --bnt-seg-on: rgb(var(--bnt-whitespace-sheet));
+  --bnt-switch-off: rgba(var(--bnt-whitespace-ink), 0.18);
+  --bnt-track: rgba(var(--bnt-whitespace-ink), 0.14);
+  --bnt-thumb-border: rgba(var(--bnt-whitespace-ink), 0.14);
+  --bnt-scrim: rgba(0, 0, 0, 0.25);
+  --bnt-folder-glyph: rgba(var(--bnt-whitespace-ink), 0.52);
+
+  --bnt-danger: #b3402f;
+  --bnt-danger-border: rgba(179, 64, 47, 0.24);
+  --bnt-danger-soft: rgba(179, 64, 47, 0.08);
+
+  --bnt-shadow-ink: 0, 0, 0;
+  --bnt-shadow-depth: 0.5;
+  --bnt-shadow-a: calc(var(--bnt-shadow-k) * var(--bnt-shadow-depth));
+  --bnt-seg-shadow: rgba(var(--bnt-shadow-ink), calc(0.1 * var(--bnt-shadow-a)));
+  --bnt-swatch-shadow: rgba(var(--bnt-shadow-ink), calc(0.1 * var(--bnt-shadow-a)));
+  --bnt-shadow-panel: 0 1px 2px rgba(var(--bnt-shadow-ink), calc(0.05 * var(--bnt-shadow-a)));
+  --bnt-shadow-card: 0 1px 2px rgba(var(--bnt-shadow-ink), calc(0.04 * var(--bnt-shadow-a)));
+  --bnt-shadow-card-hover: 0 2px 8px rgba(var(--bnt-shadow-ink), calc(0.08 * var(--bnt-shadow-a)));
+  --bnt-shadow-float: 0 4px 14px rgba(var(--bnt-shadow-ink), calc(0.08 * var(--bnt-shadow-a))),
+    0 24px 60px rgba(var(--bnt-shadow-ink), calc(0.14 * var(--bnt-shadow-a)));
+}
+
+:root[data-theme='whitespace'] .bnt-whitespace-layout {
+  display: block;
+  padding: 0;
+  overflow-y: auto;
+}
+
+/*
+ * 文字直接落在壁纸上时，强制深色方案 + 浅色壁纸会完全失去对比。
+ * 用当前纸色做主题级衬底，不改用户的全局壁纸压暗偏好；深色档自动稍重一层。
+ */
+.bnt-whitespace-layout::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--bnt-whitespace-ground);
+  opacity: var(--bnt-whitespace-backdrop-a);
+}
+
+.bnt-whitespace-stage {
+  width: 100%;
+  max-width: var(--bnt-max-w);
+  min-height: 100%;
+  margin: 0 auto;
+  padding: max(48px, var(--bnt-content-top)) 24px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+}
+
+.bnt-whitespace-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  color: var(--bnt-text);
+  text-shadow: 0 1px 2px rgba(var(--bnt-shadow-ink), calc(0.08 * var(--bnt-shadow-a)));
+}
+.bnt-whitespace-clock time {
+  font-size: clamp(42px, 5vw, 54px);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+.bnt-whitespace-clock span {
+  font-size: 14px;
+  letter-spacing: 0.035em;
+  color: var(--bnt-text-dim);
+}
+
+.bnt-whitespace-search-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.bnt-whitespace-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 2px 10px;
+  border-bottom: 1px solid var(--bnt-divider);
+  color: var(--bnt-text-faint);
+  transition: border-color 0.16s ease, color 0.16s ease;
+}
+.bnt-whitespace-search.is-focused {
+  color: var(--bnt-accent);
+  border-color: var(--bnt-accent);
+}
+.bnt-whitespace-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--bnt-text);
+  font-size: 16px;
+}
+.bnt-whitespace-search input::placeholder {
+  color: var(--bnt-text-faint);
+}
+.bnt-whitespace-search button {
+  display: flex;
+  color: var(--bnt-text-faint);
+}
+.bnt-whitespace-search button:hover {
+  color: var(--bnt-text);
+}
+.bnt-whitespace-kbd {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  font: 500 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.bnt-whitespace-scope {
+  align-self: flex-end;
+}
+.bnt-whitespace-scope .bnt-scope-item {
+  padding: 6px 9px;
+  font-size: 12.5px;
+}
+
+.bnt-whitespace-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 22px;
+}
+.bnt-whitespace-tab {
+  padding: 3px 0 5px;
+  border-bottom: 1px solid transparent;
+  color: var(--bnt-text-dim);
+  font-size: 14.5px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.bnt-whitespace-tab:hover {
+  color: var(--bnt-text);
+}
+.bnt-whitespace-tab.is-on {
+  color: var(--bnt-text);
+  border-color: var(--bnt-accent);
+  font-weight: 600;
+}
+.bnt-whitespace-tab.is-drop-into {
+  color: var(--bnt-accent);
+  box-shadow: 0 3px 0 var(--bnt-accent);
+}
+
+.bnt-whitespace-crumbs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -22px;
+  color: var(--bnt-text-dim);
+}
+.bnt-whitespace-crumbs span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bnt-whitespace-crumbs i {
+  color: var(--bnt-text-faint);
+  font-size: 13px;
+  font-style: normal;
+}
+.bnt-whitespace-crumbs button {
+  font-size: 13px;
+  color: inherit;
+}
+.bnt-whitespace-crumbs button:hover {
+  color: var(--bnt-accent);
+}
+.bnt-whitespace-crumbs [aria-current='page'] {
+  color: var(--bnt-text);
+  font-weight: 500;
+  cursor: default;
+}
+
+.bnt-whitespace-content {
+  min-height: 84px;
+  border-radius: var(--bnt-radius-ctl);
+  transition: background 0.16s ease, box-shadow 0.16s ease;
+}
+.bnt-whitespace-content.is-drop-into {
+  background: var(--bnt-accent-soft);
+  box-shadow: 0 0 0 8px var(--bnt-accent-soft);
+}
+.bnt-whitespace-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 36px;
+  row-gap: 2px;
+}
+.bnt-whitespace-row {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px 10px;
+  margin: 0 -10px;
+  border-radius: var(--bnt-radius-ctl);
+  cursor: pointer;
+  user-select: none;
+  animation: bnt-fade-in 0.2s ease backwards;
+  transition: background 0.14s ease, opacity 0.14s ease;
+}
+.bnt-whitespace-row:hover {
+  background: var(--bnt-surface-hover);
+}
+.bnt-whitespace-row.is-dragging,
+.bnt-whitespace-folder.is-dragging {
+  opacity: 0.3;
+}
+.bnt-whitespace-row.is-drop-before::before,
+.bnt-whitespace-row.is-drop-after::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--bnt-accent);
+}
+.bnt-whitespace-row.is-drop-before::before {
+  left: -5px;
+}
+.bnt-whitespace-row.is-drop-after::after {
+  right: -5px;
+}
+.bnt-whitespace-dot {
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+}
+.bnt-whitespace-row-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--bnt-text);
+  font-size: 15.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bnt-whitespace-domain {
+  max-width: 42%;
+  flex: none;
+  overflow: hidden;
+  color: var(--bnt-text-faint);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bnt-whitespace-folders {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 22px;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bnt-divider);
+}
+.bnt-whitespace-folder {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 2px;
+  border-radius: var(--bnt-radius-inner);
+  color: var(--bnt-text-dim);
+  font-size: 13.5px;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+.bnt-whitespace-folder:hover {
+  color: var(--bnt-accent);
+}
+.bnt-whitespace-folder small {
+  color: var(--bnt-text-faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.bnt-whitespace-folder-drop {
+  position: absolute;
+  inset: 0 20%;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.bnt-whitespace-folder-drop.is-over {
+  background: var(--bnt-accent-soft);
+  box-shadow: 0 0 0 2px var(--bnt-accent);
+}
+
+.bnt-whitespace-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 12px;
+  text-align: center;
+}
+.bnt-whitespace-empty strong {
+  color: var(--bnt-text);
+  font-size: 15px;
+  font-weight: 500;
+}
+.bnt-whitespace-empty span {
+  color: var(--bnt-text-dim);
+  font-size: 13.5px;
+}
+
+.bnt-whitespace-actions {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 40;
+  display: flex;
+  gap: 4px;
+}
+:root[data-theme='whitespace'] .bnt-whitespace-actions .bnt-iconbtn-lg {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-theme='whitespace'] .bnt-whitespace-actions .bnt-iconbtn-lg:hover,
+:root[data-theme='whitespace'] .bnt-whitespace-actions .bnt-iconbtn-lg.is-on {
+  color: var(--bnt-text);
+  background: var(--bnt-surface-hover);
+}
+.bnt-whitespace-actions .bnt-popover {
+  top: auto;
+  bottom: calc(100% + 9px);
+  transform-origin: bottom right;
+}
+
+/* 弹层是纸面，不再执行毛玻璃采样。 */
+:root[data-theme='whitespace'] .bnt-glass,
+:root[data-theme='whitespace'] .bnt-iconbtn-lg {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@media (max-width: 720px) {
+  .bnt-whitespace-stage {
+    padding-inline: 20px;
+    gap: 30px;
+  }
+  .bnt-whitespace-rows {
+    grid-template-columns: 1fr;
+  }
+  .bnt-whitespace-actions {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='whitespace']:not([data-scheme='light']) {
+    --bnt-whitespace-ground: var(--bnt-whitespace-ground-d);
+    --bnt-whitespace-sheet: var(--bnt-whitespace-sheet-d);
+    --bnt-whitespace-ink: var(--bnt-whitespace-ink-d);
+    --bnt-shadow-depth: 1.2;
+    --bnt-scrim: rgba(0, 0, 0, 0.5);
+    --bnt-danger: #ff8f7e;
+    --bnt-danger-border: rgba(255, 143, 126, 0.3);
+    --bnt-danger-soft: rgba(255, 143, 126, 0.12);
+    --bnt-whitespace-backdrop-dark-a: min(
+      1,
+      calc(var(--bnt-whitespace-backdrop-a) * 1.25)
+    );
+  }
+  :root[data-theme='whitespace']:not([data-scheme='light']) .bnt-whitespace-layout::before {
+    opacity: var(--bnt-whitespace-backdrop-dark-a);
+  }
+}
+
+:root[data-theme='whitespace'][data-scheme='dark'] {
+  --bnt-whitespace-ground: var(--bnt-whitespace-ground-d);
+  --bnt-whitespace-sheet: var(--bnt-whitespace-sheet-d);
+  --bnt-whitespace-ink: var(--bnt-whitespace-ink-d);
+  --bnt-shadow-depth: 1.2;
+  --bnt-scrim: rgba(0, 0, 0, 0.5);
+  --bnt-danger: #ff8f7e;
+  --bnt-danger-border: rgba(255, 143, 126, 0.3);
+  --bnt-danger-soft: rgba(255, 143, 126, 0.12);
+  --bnt-whitespace-backdrop-dark-a: min(
+    1,
+    calc(var(--bnt-whitespace-backdrop-a) * 1.25)
+  );
+}
+:root[data-theme='whitespace'][data-scheme='dark'] .bnt-whitespace-layout::before {
+  opacity: var(--bnt-whitespace-backdrop-dark-a);
+}

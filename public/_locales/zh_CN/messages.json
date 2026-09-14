@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "签页集"
+  },
+  "extensionShortName": {
+    "message": "签页集"
+  },
+  "extensionDescription": {
+    "message": "把浏览器书签以多种方式展示在新标签页上，支持目录树、卡片、置顶与展开等展示方案"
+  }
+}
