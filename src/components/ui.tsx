@@ -252,30 +252,43 @@ export function IconButton({
  * 原生 `<input type="color">` 自带内边距和边框，做成圆形后总是歪一圈、还跟旁边的
  * 色点对不齐。这里把它铺满整个可点区域并透明化，外观完全由包裹的元素画：
  *   solid  —— 一个填着当前颜色的圆点，和预设色点长得一样
- *   custom —— 彩虹环 + 调色板图标；一旦选了非预设色，就直接显示那个颜色
+ *   custom —— 彩虹环 + 白色调色板图标；可用 onCommit 在完成取色时保存颜色
  */
 export function ColorField({
   value,
   onChange,
+  onCommit,
   variant = 'solid',
   active = false,
   label,
 }: {
   value: string
   onChange: (next: string) => void
+  onCommit?: (next: string) => void
   variant?: 'solid' | 'custom'
   active?: boolean
   label: string
 }) {
   const isCustom = variant === 'custom'
+  const inputRef = useRef<HTMLInputElement>(null)
+  const commitRef = useRef(onCommit)
+  commitRef.current = onCommit
+  useEffect(() => {
+    const input = inputRef.current
+    if (!input) return
+    // React 的 onChange 会随 input 连续触发；原生 change 才表示完成这次取色。
+    const commit = () => commitRef.current?.(input.value)
+    input.addEventListener('change', commit)
+    return () => input.removeEventListener('change', commit)
+  }, [])
   return (
     <span
       className={`bnt-colorfield${isCustom ? ' is-custom' : ''}${active ? ' is-on' : ''}`}
       style={{ background: isCustom && !active ? undefined : value, color: value }}
       title={label}
     >
-      {isCustom && !active && <IconPalette size={15} />}
-      <input type="color" value={value} aria-label={label} onChange={(e) => onChange(e.target.value)} />
+      {isCustom && <IconPalette size={15} />}
+      <input ref={inputRef} type="color" value={value} aria-label={label} onChange={(e) => onChange(e.target.value)} />
     </span>
   )
 }

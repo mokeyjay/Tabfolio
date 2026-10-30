@@ -1,4 +1,5 @@
 import type { ThemeDefinition, ThemeOptionValue } from '../types'
+import { THEME_BACKGROUNDS } from '../backgrounds'
 import { ColumnarLayout } from './ColumnarLayout'
 import './columnar.css'
 
@@ -57,6 +58,7 @@ export const columnarTheme: ThemeDefinition = {
     },
   ],
   recommends: {
+    background: THEME_BACKGROUNDS.columnar,
     radius: 8,
     shadow: 20,
     accent: '#3f5d7d',

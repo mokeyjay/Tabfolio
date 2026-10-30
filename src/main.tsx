@@ -8,30 +8,50 @@ import { getSettings, loadSettings } from './state/settingsStore'
 import { preloadActiveWallpaper } from './state/wallpaper'
 import { loadMeta } from './state/metaStore'
 import { loadStats } from './state/statsStore'
+import { loadAccentPalette } from './state/accentPaletteStore'
 import { messages, setLanguage } from './i18n'
 import { loadBookmarks, watchBookmarks } from './state/bookmarksStore'
 import { loadDirectorySources } from './state/directoryStore'
 import { ensureBingWallpaper } from './state/bingWallpaper'
+import { ensurePrivacyConsent, hasPrivacyConsent } from './components/PrivacyConsent'
 import './styles/base.css'
 
 // 设置是异步读的，但标签标题和 <html lang> 等不了：先按浏览器语言定一版，
 // 设置到位后 boot() 里再按用户的偏好覆盖一次。
-setLanguage('auto')
+const pageParams = new URLSearchParams(location.search)
+const reviewPrivacy = pageParams.has('privacy')
+const reviewLanguage = pageParams.get('lang')
+setLanguage(reviewPrivacy && (reviewLanguage === 'en' || reviewLanguage === 'zh') ? reviewLanguage : 'auto')
+const reactRoot = createRoot(document.getElementById('root')!)
+
+let appearanceTask: Promise<void> | undefined
+function loadAppearance(): Promise<void> {
+  // 重新查看欢迎页和返回书签页共用这次加载，避免重复推进壁纸轮换。
+  return appearanceTask ??= (async () => {
+    await initArea()
+    await Promise.all([loadSettings(), loadDirectorySources()])
+    setLanguage(getSettings().language)
+    if (getSettings().background.bingEnabled) await ensureBingWallpaper()
+    await preloadActiveWallpaper(getSettings())
+  })()
+}
 
 async function boot() {
-  // 存储区(sync / local)要先定下来，设置和书签附加数据都从它读
-  await initArea()
-  // 设置先到位，首屏就能按用户的主题和布局直接画，不会闪一下默认样式
-  await Promise.all([loadSettings(), loadMeta(), loadStats(), loadDirectorySources()])
-  // 语言在渲染之前定下来，首屏和启动失败的兜底面板都得用它
-  setLanguage(getSettings().language)
-  if (getSettings().background.bingEnabled) await ensureBingWallpaper()
-  // 背景图和书签一起读：本地图片存在 storage.local，不预读的话第一帧是纯底色，
-  // 图片晚一拍才盖上来 —— 也就是打开新标签页时看到的那一下闪。
-  await Promise.all([loadBookmarks(), preloadActiveWallpaper(getSettings())])
+  // 已同意的用户可以先恢复外观；首次同意前仅使用内置默认主题。
+  if (reviewPrivacy && await hasPrivacyConsent()) await loadAppearance()
+  await ensurePrivacyConsent(reactRoot, reviewPrivacy)
+  if (reviewPrivacy) {
+    // 查看后进入正常新标签页，刷新时无需再次进入欢迎页。
+    pageParams.delete('privacy')
+    pageParams.delete('lang')
+    const search = pageParams.toString()
+    history.replaceState(null, '', `${location.pathname}${search ? `?${search}` : ''}${location.hash}`)
+  }
+  await loadAppearance()
+  await Promise.all([loadBookmarks(), loadMeta(), loadStats(), loadAccentPalette()])
   watchBookmarks()
 
-  createRoot(document.getElementById('root')!).render(
+  reactRoot.render(
     <StrictMode>
       <ErrorBoundary>
         <AppProvider>

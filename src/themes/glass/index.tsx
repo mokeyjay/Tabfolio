@@ -1,4 +1,5 @@
 import type { ThemeDefinition, ThemeOptionValue } from '../types'
+import { THEME_BACKGROUNDS } from '../backgrounds'
 import { Sidebar } from '../../components/Sidebar'
 import { ContentArea } from '../../components/ContentArea'
 import { RightPanel } from '../../components/RightPanel'
@@ -43,6 +44,7 @@ export const glassTheme: ThemeDefinition = {
    * 系统那支蓝。卡片染色一律不开 —— 毛玻璃已经把壁纸的颜色透上来了，再叠一层图标色只会脏。
    */
   recommends: {
+    background: THEME_BACKGROUNDS.glass,
     radius: 16,
     shadow: 100,
     accent: '#0071e3',

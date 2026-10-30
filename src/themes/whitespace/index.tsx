@@ -1,4 +1,5 @@
 import type { ThemeDefinition, ThemeOptionValue } from '../types'
+import { THEME_BACKGROUNDS } from '../backgrounds'
 import { WhitespaceLayout } from './WhitespaceLayout'
 import './whitespace.css'
 
@@ -49,6 +50,7 @@ export const whitespaceTheme: ThemeDefinition = {
     },
   ],
   recommends: {
+    background: THEME_BACKGROUNDS.whitespace,
     radius: 8,
     shadow: 30,
     accent: '#7a5c46',

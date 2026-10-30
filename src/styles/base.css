@@ -185,7 +185,8 @@ svg {
   height: 100vh;
   display: flex;
   align-items: stretch;
-  padding: 16px;
+  --bnt-app-pad: 16px;
+  padding: var(--bnt-app-pad);
   gap: 14px;
   /*
    * 收起的侧栏是用负 margin 推出视口的，它的盒子仍然占着位置 —— 不裁掉的话文档就比
@@ -483,14 +484,16 @@ svg {
 .bnt-brand-mark {
   width: 32px;
   height: 32px;
-  border-radius: var(--bnt-radius-ctl);
+  /* 圆角比例与扩展图标一致，不随主题圆角变化，保持是同一个 logo */
+  border-radius: 22%;
   flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: var(--bnt-accent);
   color: #fff;
-  font: 600 15px/1 system-ui;
+}
+.bnt-brand-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .bnt-brand-text {
   display: flex;
@@ -522,6 +525,8 @@ svg {
   flex: 1;
   min-width: 0;
   min-height: 0;
+  /* 书签列表穿过 .bnt-app 的底部内边距直通视口底边，滚动时不会在离底边一截的地方被切断 */
+  margin-bottom: calc(-1 * var(--bnt-app-pad));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -532,6 +537,8 @@ svg {
   max-width: var(--bnt-max-w);
   height: 100%;
   min-height: 0;
+  /* 标题和卡片一起内缩，为滚动区两侧的投影留白腾出空间。 */
+  padding-inline: 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -622,55 +629,18 @@ svg {
 .bnt-title-separator {
   color: var(--bnt-text-faint);
 }
-.bnt-display-menu {
-  position: relative;
-  flex: none;
-}
-.bnt-display-trigger {
+.bnt-settings-trigger {
   color: var(--bnt-text-dim);
 }
-.bnt-popover.bnt-display-popover {
-  width: min(420px, calc(100vw - 32px));
-  max-height: calc(100vh - 82px);
-  padding: 0;
-  gap: 0;
-  overflow: hidden;
-}
-.bnt-display-popover-head {
-  flex: none;
-  padding: 10px 10px 0;
-}
-.bnt-display-popover-tabs {
-  margin-top: 0;
-}
-.bnt-display-popover-tabs .bnt-tabs {
-  width: 100%;
-}
-.bnt-display-popover-tabs .bnt-tab {
-  flex: 1;
-  padding-inline: 8px;
-}
-.bnt-display-popover-body {
-  min-height: 0;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  animation: bnt-fade-in 0.16s ease both;
-  overscroll-behavior: contain;
+/* 鼠标打开窗口后的焦点恢复不画键盘环；后续键盘操作仍正常显示焦点。 */
+.bnt-settings-trigger[data-restored-focus]:focus-visible {
+  outline: none;
 }
 .bnt-display-switches,
 .bnt-display-sliders {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-.bnt-display-popover .bnt-switch-label {
-  font-size: 14px;
-}
-.bnt-display-popover .bnt-seg {
-  max-width: 100%;
 }
 .bnt-theme-picker {
   display: flex;
@@ -694,14 +664,7 @@ svg {
   color: var(--bnt-accent);
   background: var(--bnt-accent-soft);
 }
-.bnt-display-note {
-  padding: 9px 10px;
-  border-radius: var(--bnt-radius-ctl);
-  color: var(--bnt-text-faint);
-  background: var(--bnt-seg-bg);
-  font-size: 12px;
-  line-height: 1.55;
-}
+
 
 /* 主题不支持的框架设置：保留位置与当前值，但禁止误操作，并解释能力差异。 */
 .bnt-framework-setting {
@@ -810,18 +773,24 @@ svg {
 }
 
 .bnt-scroll {
-  width: calc(100% + 16px);
+  /* 与内容区内缩量相抵，滚动边界保持原位，卡片投影余量由 10px 增至 26px。 */
+  width: calc(100% + 48px);
   height: calc(100% + 8px);
-  margin: -8px -8px 0;
+  margin: -8px -24px 0;
   overflow-y: auto;
-  padding: 10px 10px 20px;
+  /* 底部补回借走的外层内边距，滚到底时末行与视口底边的距离不变 */
+  padding: 10px 26px calc(20px + var(--bnt-app-pad));
   display: flex;
   flex-direction: column;
 }
 
 /* 内容区最外层落点 —— 从子目录里拖出来丢在空白处就回到当前目录 */
 .bnt-drop-root {
-  flex: 1;
+  /*
+   * 基准高度必须是 auto：写成 flex: 1（基准 0）时盒子被锁在滚动区高度，内容溢出盒子，
+   * 滚动区的底部内边距就算不进滚动范围，滚到底时最后一行会贴着裁切线、投影被切掉。
+   */
+  flex: 1 0 auto;
   min-height: 100%;
   display: flex;
   flex-direction: column;
@@ -885,7 +854,7 @@ svg {
   border-color: var(--bnt-card-border-hover);
   box-shadow: inset 0 1px 0 var(--bnt-sheen), var(--bnt-shadow-card-hover);
 }
-.bnt-card:hover .bnt-icon.is-image img,
+.bnt-card:hover .bnt-icon.is-image,
 .bnt-card:hover .bnt-icon.is-emoji {
   transform: scale(1.06);
 }
@@ -969,12 +938,15 @@ svg {
 .bnt-icon.is-mono {
   overflow: hidden;
 }
+/* 连同圆角容器一起缩放，图片边缘就不会被未缩放的容器裁掉。 */
+.bnt-icon.is-image {
+  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
 .bnt-icon img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
-  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 .bnt-icon.is-mono {
   font-size: var(--bnt-mono-size);
@@ -1268,6 +1240,9 @@ svg {
 .bnt-empty-mark {
   width: 48px;
   height: 48px;
+  display: grid;
+  place-items: center;
+  color: var(--bnt-text-dim);
   border-radius: var(--bnt-radius-ctl);
   background: var(--bnt-glass-bg);
   border: 1px solid var(--bnt-glass-border);
@@ -1344,24 +1319,67 @@ svg {
   height: 660px;
   max-height: 86vh;
 }
-/* tab 居中，关闭按钮绝对定位在右上角 —— 这样 tab 是真正居中，不受按钮宽度影响 */
-.bnt-dialog-top {
-  position: relative;
-  flex: none;
-  padding: 14px 18px;
+/* 设置窗口没有全屏遮罩，窗口之外的页面仍可点击和滚动。 */
+.bnt-settings-window {
+  position: fixed;
+  z-index: 50;
+  width: min(620px, calc(100vw - 32px));
+  height: min(660px, calc(100dvh - 32px));
+}
+.bnt-settings-window > .bnt-dialog {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+}
+/* 有独立卡片材质的主题，设置窗口跟随卡片参数；纸面主题保留原有实色底。 */
+:root:is([data-theme='glass'], [data-theme='acrylic']) .bnt-settings-window > .bnt-glass,
+:root:is([data-theme='glass'], [data-theme='acrylic']) .bnt-privacy-card {
+  background: var(--bnt-card-bg);
+  border-color: var(--bnt-card-border);
+  backdrop-filter: blur(var(--bnt-card-blur)) saturate(var(--bnt-acrylic-saturation, 180%));
+  -webkit-backdrop-filter: blur(var(--bnt-card-blur)) saturate(var(--bnt-acrylic-saturation, 180%));
+}
+.bnt-settings-window.is-closing > .bnt-dialog {
+  animation: bnt-pop-out 0.15s ease forwards;
+}
+.bnt-settings-titlebar {
   display: flex;
   align-items: center;
-  justify-content: center;
+  flex: none;
+  gap: 8px;
+  padding: 4px 12px 0;
+}
+.bnt-settings-drag-handle {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+  padding: 12px 4px;
+  text-align: left;
+  color: var(--bnt-text);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.bnt-settings-window.is-dragging .bnt-settings-drag-handle {
+  cursor: grabbing;
+}
+.bnt-settings-tabs {
+  flex: none;
+  padding: 0 14px 12px;
   border-bottom: 1px solid var(--bnt-divider);
+  overflow-x: auto;
 }
-.bnt-dialog-close {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
+.bnt-settings-tabs .bnt-tabs {
+  min-width: max-content;
 }
-.bnt-dialog-close:active {
-  transform: translateY(-50%) scale(0.94);
+.bnt-settings-tabs .bnt-tab {
+  flex: 1;
+}
+.bnt-settings-window .bnt-dialog-body {
+  overscroll-behavior: contain;
 }
 .bnt-dialog-body {
   flex: 1;
@@ -1479,11 +1497,24 @@ svg {
   text-decoration-thickness: 1px;
   opacity: 0.7;
 }
+.bnt-recommend-current {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .bnt-recommend-value b {
   display: flex;
   align-items: center;
   gap: 5px;
   font-weight: 600;
+}
+.bnt-recommend-background {
+  width: 32px;
+  height: 20px;
+  flex: none;
+  border-radius: 4px;
+  border: 1px solid var(--bnt-glass-border);
 }
 /*
  * 推荐值不拿主题色上色 —— 主色是用户挑的，深色底上撞见一支暗蓝就读不清了。
@@ -1841,6 +1872,40 @@ svg {
   flex-wrap: wrap;
   align-items: center;
 }
+.bnt-accent-item {
+  position: relative;
+  display: flex;
+}
+.bnt-accent-remove {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #404047;
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.bnt-accent-item:hover .bnt-accent-remove,
+.bnt-accent-item:focus-within .bnt-accent-remove {
+  opacity: 1;
+  pointer-events: auto;
+}
+.bnt-accent-remove:hover {
+  background: var(--bnt-danger);
+}
+@media (hover: none) {
+  .bnt-accent-remove {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
 .bnt-swatch {
   width: 32px;
   height: 32px;
@@ -1902,6 +1967,7 @@ svg {
   );
 }
 .bnt-colorfield.is-custom svg {
+  color: #fff;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
   pointer-events: none;
 }
@@ -2525,6 +2591,7 @@ svg {
 }
 .bnt-btn-ghost {
   color: var(--bnt-text);
+  text-decoration: none;
 }
 .bnt-btn-ghost:hover {
   background: var(--bnt-field-bg-focus);
@@ -2561,6 +2628,43 @@ svg {
   justify-content: center;
   font-size: 15px;
   color: var(--bnt-text-dim);
+}
+
+/* 欢迎页只定义阅读排版，颜色、材质、圆角和按钮沿用当前主题。 */
+.bnt-privacy {
+  position: relative;
+  z-index: 1;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+  overflow: auto;
+  color: var(--bnt-text);
+  font-size: 18px;
+}
+.bnt-privacy::before { position: fixed; }
+.bnt-privacy-card {
+  width: 100%;
+  max-width: 960px;
+  flex-shrink: 0;
+  margin: auto;
+  padding: 32px 40px;
+  border-radius: var(--bnt-radius-panel);
+  line-height: 1.7;
+}
+.bnt-privacy-card h1 { margin: 0 0 16px; font-size: 34px; font-weight: 600; line-height: 1.3; }
+.bnt-privacy-card p { margin: 16px 0; }
+.bnt-privacy-card ul { padding-left: 24px; }
+.bnt-privacy-card li + li { margin-top: 12px; }
+.bnt-privacy-card summary { cursor: pointer; text-decoration: underline; }
+.bnt-privacy-card pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.bnt-privacy-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.bnt-privacy-actions button { height: auto; min-height: 48px; padding: 10px 20px; font-size: inherit; }
+.bnt-privacy-actions button:disabled { opacity: .6; cursor: wait; }
+@media (max-width: 600px) {
+  .bnt-privacy { padding: 20px 12px; font-size: 17px; }
+  .bnt-privacy-card { padding: 28px 24px; }
+  .bnt-privacy-card h1 { font-size: 28px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

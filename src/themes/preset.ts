@@ -8,7 +8,7 @@ import { supportsFrameworkSetting } from './types'
  *
  * 换主题时不擅自改用户调好的东西 —— 先把这套推荐值逐项摊开，用户勾哪项才应用哪项。
  * 主色、圆角、阴影这些明明是全局设置也列进来：主题只是「建议」它们该是什么，
- * 决定权仍在用户手里。明暗方案、壁纸、侧栏宽度跟主题气质无关，连推荐都不给。
+ * 决定权仍在用户手里。背景是可选的 CSS 推荐项，明暗方案和侧栏宽度不参与推荐。
  */
 
 /** 推荐清单里的一行：这一项现在是什么、推荐成什么、会不会变 */
@@ -20,6 +20,8 @@ export interface RecommendationEntry {
   changed: boolean
   /** 值是颜色时界面会多画一个色点 */
   color?: { current: string; next: string }
+  /** CSS 背景缩略预览。 */
+  background?: string
 }
 
 /** 勾选集合；不给就是整套全应用 */
@@ -38,9 +40,33 @@ export function applyThemeRecommendation(
   const pick = <T,>(key: string, next: T, current: T): T => (has(key) ? next : current)
   const supported = (key: Parameters<typeof supportsFrameworkSetting>[1]) =>
     supportsFrameworkSetting(theme, key)
+  const existingBackground = prev.background.wallpapers.find((wall) => wall.id === r.background.id)
+  const recommendedBackground = {
+    ...r.background,
+    parentId: existingBackground?.parentId ?? null,
+    order: existingBackground?.order ?? Math.max(-1,
+      ...prev.background.wallpapers.filter((wall) => wall.parentId === null).map((wall) => wall.order),
+      ...prev.background.folders.filter((folder) => folder.parentId === null).map((folder) => folder.order),
+    ) + 1,
+  }
 
   return {
     ...prev,
+    background: has('background')
+      ? {
+          ...prev.background,
+          // 即使内置背景已被删除或编辑，也能完整恢复所选的推荐背景。
+          wallpapers: existingBackground
+            ? prev.background.wallpapers.map((wall) => wall.id === r.background.id ? recommendedBackground : wall)
+            : [...prev.background.wallpapers, recommendedBackground],
+          selectedIds: [r.background.id],
+          selectedFolderIds: [],
+          bingEnabled: false,
+          rotate: 'off',
+          blur: 0,
+          dim: 0,
+        }
+      : prev.background,
     layout: {
       ...prev.layout,
       cardWidth: supported('cardWidth')
@@ -139,7 +165,25 @@ export function recommendationEntries(
   const supported = (key: Parameters<typeof supportsFrameworkSetting>[1]) =>
     supportsFrameworkSetting(theme, key)
 
+  const backgrounds = s.background.wallpapers.filter((wall) => s.background.selectedIds.includes(wall.id))
+  const folders = s.background.folders.filter((folder) => s.background.selectedFolderIds.includes(folder.id))
+  const backgroundEffects = s.background.rotate !== 'off' || s.background.blur > 0 || s.background.dim > 0
+  const currentBackground = s.background.bingEnabled
+    ? t.wallpaper.bingWallpapers
+    : ([...backgrounds, ...folders].map((item) => item.name).join(' · ') || t.display.recommendPlainBackground)
+      + (backgroundEffects ? ` · ${t.display.recommendBackgroundEffects}` : '')
+  const backgroundMatches = !s.background.bingEnabled && !backgroundEffects
+    && s.background.selectedFolderIds.length === 0
+    && s.background.selectedIds.length === 1 && s.background.selectedIds[0] === r.background.id
+    && backgrounds.length === 1 && backgrounds[0].kind === 'preset'
+    && backgrounds[0].css === r.background.css
+
   return [
+    {
+      ...entry('background', t.display.recommendBackground, currentBackground, r.background.name),
+      changed: !backgroundMatches,
+      background: r.background.css,
+    },
     {
       ...entry('accent', t.display.accent, s.theme.accent, r.accent),
       color: { current: s.theme.accent, next: r.accent },

@@ -1,4 +1,5 @@
 import type { ThemeDefinition, ThemeOptionValue } from '../types'
+import { THEME_BACKGROUNDS } from '../backgrounds'
 import { AcrylicLayout } from './AcrylicLayout'
 import './acrylic.css'
 
@@ -58,6 +59,7 @@ export const acrylicTheme: ThemeDefinition = {
    * 主色取 Win11 那支更深的蓝(系统强调色的默认档)，和 macOS 的蓝拉开一点。
    */
   recommends: {
+    background: THEME_BACKGROUNDS.acrylic,
     radius: 12,
     shadow: 130,
     accent: '#0067c0',

@@ -5,8 +5,8 @@ import { updateSettings } from '../state/settingsStore'
 import { splitLeadingEmoji } from '../utils/emoji'
 import { FolderContentsRoot, Grid } from './FolderContents'
 import { SlidingGroup } from './ui'
-import { IconFolderOutline, IconGlobal, IconHome } from './icons'
-import { DisplaySettingsPopover } from './DisplaySettingsPopover'
+import { IconFolderOutline, IconGlobal, IconHome, IconSearch } from './icons'
+import { SettingsButton } from './SettingsButton'
 import { useMessages, type Messages } from '../i18n'
 
 /** 按唯一定位路径逐级还原祖先目录，避免重名目录或标题中的斜杠造成误跳转。 */
@@ -138,7 +138,7 @@ export function ContentArea() {
               ariaLabel={t.content.searchScope}
             />
           )}
-          <DisplaySettingsPopover />
+          <SettingsButton />
         </header>
 
         <div className="bnt-body">
@@ -167,7 +167,9 @@ export function ContentArea() {
 
           {empty && (
             <div className="bnt-empty">
-              <div className="bnt-empty-mark" />
+              <div className="bnt-empty-mark" aria-hidden>
+                {searching ? <IconSearch size={26} /> : <IconFolderOutline size={26} />}
+              </div>
               <div className="bnt-empty-title">
                 {searching ? t.content.emptySearch : t.content.emptyFolder}
               </div>

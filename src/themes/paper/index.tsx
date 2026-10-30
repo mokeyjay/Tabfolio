@@ -1,4 +1,5 @@
 import type { ThemeDefinition, ThemeOptionValue } from '../types'
+import { THEME_BACKGROUNDS } from '../backgrounds'
 import { PaperLayout } from './PaperLayout'
 import './paper.css'
 
@@ -66,6 +67,7 @@ export const paperTheme: ThemeDefinition = {
    * 目录展开 + 面包屑则把「一张纸装完一个目录」这件事说清楚。
    */
   recommends: {
+    background: THEME_BACKGROUNDS.paper,
     radius: 18,
     shadow: 45,
     // 一整页都是灰白，主色是唯一的一块饱和色，取一支清透的绿

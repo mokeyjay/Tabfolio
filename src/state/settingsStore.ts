@@ -3,6 +3,7 @@ import { createStore, debounce, useStore } from './store'
 import { currentArea, isSyncEnabled, onAreaChange, switchArea } from './area'
 import { DEFAULT_SETTINGS, packSettings, readStoredSettings } from './settingsSchema'
 import { setSyncEnabledForMeta } from './metaStore'
+import { resetAccentPalette, setSyncEnabledForPalette } from './accentPaletteStore'
 import { messages } from '../i18n'
 import { removeImage } from '../platform/blobs'
 import { unlinkDirectory } from './directoryStore'
@@ -91,8 +92,6 @@ function watchRemote() {
     lastWritten = snapshot
     const settings = mergeSettings(shared, machine)
     apply(settings)
-    // 旧版本设备刚写了一份旧结构，升级后写回，那台设备随之进入只读
-    if (stored.migrated) persist(settings)
   })
 }
 
@@ -122,8 +121,6 @@ export async function loadSettings(): Promise<void> {
   const settings = mergeSettings(shared, machine)
   apply(settings, null)
   watchRemote()
-  // 从旧版本迁移上来的趁早写回当前版本；更新版本写的则由 write() 拦下，一个字节都不碰
-  if (stored.migrated || storedMachine.migrated) persist(settings)
 }
 
 export function updateSettings(fn: (prev: Settings) => Settings): void {
@@ -170,7 +167,7 @@ export async function setSyncEnabled(enabled: boolean): Promise<void> {
     sharedNewer = false
     // 设置和书签附加数据必须一起搬迁，任一失败都回到原存储区。
     // 本机那一半不参与搬迁 —— 它本来就一直待在 local。
-    await Promise.all([write(current), setSyncEnabledForMeta()])
+    await Promise.all([write(current), setSyncEnabledForMeta(), setSyncEnabledForPalette()])
     apply(current, null)
     watchRemote()
   } catch (error) {
@@ -227,6 +224,7 @@ export async function resetSettings(): Promise<void> {
   const next = { ...structuredClone(DEFAULT_SETTINGS), syncEnabled: isSyncEnabled() }
   await updateSettingsNow(() => next)
   await Promise.all([
+    resetAccentPalette(),
     cleanupLocalBackgroundImages(localImageIds),
     Promise.allSettled(sourceIds.map((id) => unlinkDirectory(id))),
   ])

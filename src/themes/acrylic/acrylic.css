@@ -66,7 +66,8 @@
 }
 
 /* 深浅方案都先整理一次壁纸亮度，确保未承托在面板上的标题也始终可读。 */
-.bnt-acrylic-layout::before {
+.bnt-acrylic-layout::before,
+:where(:root[data-theme='acrylic']) .bnt-privacy::before {
   content: '';
   position: absolute;
   inset: 0;

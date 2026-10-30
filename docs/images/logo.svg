@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 与 scripts/gen-icons.mjs 生成的扩展图标一致：主题蓝圆角底 + 白色书签丝带 -->
+  <rect width="100" height="100" rx="22" fill="#0071e3"/>
+  <polygon points="34,23.5 66,23.5 66,77.5 50,60 34,77.5" fill="#fff"/>
+</svg>

@@ -19,7 +19,6 @@ import {
   IconCommand,
   IconPin,
   IconSearch,
-  IconSettings,
 } from './icons'
 
 function FolderRow({ node }: { node: BookmarkNode }) {
@@ -102,7 +101,7 @@ function SearchShortcut() {
 }
 
 export function Sidebar() {
-  const { root, query, setQuery, settings, setSettingsOpen } = useApp()
+  const { root, query, setQuery, settings } = useApp()
   const t = useMessages()
   const inputRef = useRef<HTMLInputElement>(null)
   const [focused, setFocused] = useState(false)
@@ -189,7 +188,10 @@ export function Sidebar() {
 
       <div className="bnt-sidebar-foot">
         <span className="bnt-brand-mark" aria-hidden>
-          B
+          {/* 与 scripts/gen-icons.mjs 的扩展图标同一个书签丝带，底色跟随主题主色 */}
+          <svg viewBox="0 0 100 100">
+            <polygon points="34,23.5 66,23.5 66,77.5 50,60 34,77.5" fill="currentColor" />
+          </svg>
         </span>
         <span className="bnt-brand-text">
           <span className="bnt-brand-name">{t.sidebar.brand}</span>
@@ -208,15 +210,6 @@ export function Sidebar() {
           }
         >
           <IconChevronLeft size={17} />
-        </button>
-        <button
-          type="button"
-          className="bnt-iconbtn"
-          title={t.sidebar.settings}
-          aria-label={t.sidebar.settings}
-          onClick={() => setSettingsOpen(true)}
-        >
-          <IconSettings size={17} />
         </button>
       </div>
 

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { BackgroundFit, RuntimeWallpaper } from '../types'
-import { useApp } from '../app/AppContext'
+import type { BackgroundFit, RuntimeWallpaper, Settings } from '../types'
 import { useLocalImage } from '../hooks/useLocalImage'
 import { useDirectorySources, useLinkedImage } from '../state/directoryStore'
 import {
@@ -19,8 +18,7 @@ import { ensureBingWallpaper, useBingWallpaperState } from '../state/bingWallpap
  * 这里只负责页面开着期间的后续切换 —— 挂载时不再推进一次，否则会一次跳两张。
  * 间隔设为 0 时整个计时器不启用：那一档只在开新标签页时换。
  */
-function useRotatingWallpaper(): RuntimeWallpaper | undefined {
-  const { settings } = useApp()
+function useRotatingWallpaper(settings: Settings): RuntimeWallpaper | undefined {
   const bing = useBingWallpaperState()
   // 本地目录手动刷新后需要重新计算候选项；索引本身不放进可同步设置。
   const directoryState = useDirectorySources()
@@ -82,10 +80,9 @@ export function fitStyle(fit: BackgroundFit): {
   }
 }
 
-export function Background() {
-  const { settings } = useApp()
+export function Background({ settings }: { settings: Settings }) {
   const bg = settings.background
-  const wall = useRotatingWallpaper()
+  const wall = useRotatingWallpaper(settings)
   const localSrc = useLocalImage(wall?.kind === 'local' ? wall.id : undefined)
   const linkedSrc = useLinkedImage(wall?.kind === 'linked' ? wall : undefined)
 

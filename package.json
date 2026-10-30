@@ -11,7 +11,8 @@
     "pack": "npm run build && node scripts/pack.mjs",
     "watch": "npm run icons && vite build --watch --mode development",
     "typecheck": "tsc -b --noEmit",
-    "icons": "node scripts/gen-icons.mjs"
+    "icons": "node scripts/gen-icons.mjs",
+    "showcase": "node scripts/showcase.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

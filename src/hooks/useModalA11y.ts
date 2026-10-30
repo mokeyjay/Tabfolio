@@ -15,6 +15,8 @@ function setInert(element: Element | null, inert: boolean): void {
 
 function refreshLayers(): void {
   setInert(document.querySelector('.bnt-app'), layers.length > 0)
+  // 设置窗口本身不锁定页面；有确认框等真正的模态弹窗时，暂时停用其底层控件。
+  setInert(document.querySelector('.bnt-settings-window'), layers.length > 0)
   const top = layers.at(-1)
   for (const layer of layers) setInert(layer.overlay, layer !== top)
 }

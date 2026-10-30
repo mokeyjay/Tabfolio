@@ -17,7 +17,7 @@ import { updateSettings } from '../../state/settingsStore'
 import { displayDomain } from '../../utils/url'
 import { splitLeadingEmoji } from '../../utils/emoji'
 import { BookmarkIcon } from '../../components/BookmarkIcon'
-import { DisplaySettingsPopover } from '../../components/DisplaySettingsPopover'
+import { SettingsButton } from '../../components/SettingsButton'
 import { SlidingGroup } from '../../components/ui'
 import {
   IconChevronRight,
@@ -25,7 +25,6 @@ import {
   IconFolderOutline,
   IconGlobal,
   IconSearch,
-  IconSettings,
 } from '../../components/icons'
 import { useMessages, type Messages } from '../../i18n'
 
@@ -412,7 +411,7 @@ function ColumnsSearch() {
 
 /** 列栏骨架：每一级目录展开成一列，始终保留祖先上下文。 */
 export function ColumnsLayout() {
-  const { settings, root, currentFolder, selectFolder, query, setSettingsOpen } = useApp()
+  const { settings, root, currentFolder, selectFolder, query } = useApp()
   const t = useMessages()
   const railRef = useRef<HTMLDivElement>(null)
   const chain = useMemo(() => folderChain(root, currentFolder), [root, currentFolder])
@@ -506,16 +505,7 @@ export function ColumnsLayout() {
             })}
           </nav>
           <ColumnsSearch />
-          <DisplaySettingsPopover />
-          <button
-            type="button"
-            className="bnt-iconbtn bnt-columns-settings"
-            title={t.sidebar.settings}
-            aria-label={t.sidebar.settings}
-            onClick={() => setSettingsOpen(true)}
-          >
-            <IconSettings size={17} />
-          </button>
+          <SettingsButton />
         </header>
 
         <main ref={railRef} className="bnt-columns-rail">

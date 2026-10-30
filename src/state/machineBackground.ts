@@ -1,7 +1,7 @@
 import type { LocalWallpaper, Settings } from '../types'
 import { localArea } from '../platform/storage'
 import { SETTINGS_VERSION } from './settingsSchema'
-import { pack, unpack, type Migrations } from './versioning'
+import { pack, unpack } from './versioning'
 
 /**
  * 背景设置里「只属于本机」的那一半。
@@ -16,9 +16,6 @@ import { pack, unpack, type Migrations } from './versioning'
  */
 
 const KEY = 'backgroundLocal'
-
-/** 本机那一半的迁移表，版本号与同步那一半共用 SETTINGS_VERSION，写法见 settingsSchema.ts */
-const MACHINE_MIGRATIONS: Migrations = {}
 
 export interface MachineBackground {
   /** 本机添加的本地图片壁纸 */
@@ -108,27 +105,24 @@ function parseMachineBackground(raw: unknown): MachineBackground | null {
 
 export interface StoredMachineBackground {
   value: MachineBackground
-  /** 刚从旧版本迁移上来，应写回当前版本 */
-  migrated: boolean
   /** 更新版本的扩展写的(比如装回了旧版)，写回会冲掉新数据 */
   newer: boolean
 }
 
 export async function readMachineBackground(): Promise<StoredMachineBackground> {
-  const unpacked = unpack(await localArea.get(KEY), SETTINGS_VERSION, MACHINE_MIGRATIONS)
+  const unpacked = unpack(await localArea.get(KEY), SETTINGS_VERSION)
   const empty = () => structuredClone(EMPTY_MACHINE_BACKGROUND)
   switch (unpacked.status) {
     case 'empty':
     case 'invalid':
-      return { value: empty(), migrated: false, newer: false }
+      return { value: empty(), newer: false }
     case 'current':
       return {
         value: parseMachineBackground(unpacked.data) ?? empty(),
-        migrated: unpacked.migrated,
         newer: false,
       }
     case 'newer':
-      return { value: parseMachineBackground(unpacked.data) ?? empty(), migrated: false, newer: true }
+      return { value: parseMachineBackground(unpacked.data) ?? empty(), newer: true }
   }
 }
 

@@ -1,4 +1,5 @@
 import type { ThemeDefinition, ThemeOptionValue } from '../types'
+import { THEME_BACKGROUNDS } from '../backgrounds'
 import { ColumnsLayout } from './ColumnsLayout'
 import './columns.css'
 
@@ -48,6 +49,7 @@ export const columnsTheme: ThemeDefinition = {
     },
   ],
   recommends: {
+    background: THEME_BACKGROUNDS.columns,
     radius: 8,
     shadow: 35,
     accent: '#3f5d7d',

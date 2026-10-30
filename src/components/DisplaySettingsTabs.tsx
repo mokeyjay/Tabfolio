@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { FrameworkSettingKey, ThemeDefinition, ThemeOptionValue } from '../themes/types'
 import { defaultThemeOptions, supportsFrameworkSetting } from '../themes/types'
 import type { BackgroundFit, ColorScheme } from '../types'
 import { useApp } from '../app/AppContext'
 import { updateSettings } from '../state/settingsStore'
 import {
-  ACCENT_PRESETS,
   DEFAULT_SETTINGS,
   clampFolderSetting,
 } from '../state/settingsSchema'
 import { THEMES, getTheme, themeOptionsOf } from '../themes/registry'
+import { addAccentColor, removeAccentColor, resetAccentPalette, useAccentPalette } from '../state/accentPaletteStore'
 import {
   applyThemeRecommendation,
   recommendationEntries,
@@ -17,20 +17,8 @@ import {
 } from '../themes/preset'
 import { useMessages, type Messages } from '../i18n'
 import { FolderSettingEditor } from './FolderSettingEditor'
-import { Tabs } from './Tabs'
 import { ColorField, IconButton, NumberSetting, Segmented, Slider, Switch } from './ui'
-import { IconCheck, IconRestore, IconSliders } from './icons'
-
-type DisplayTabId = 'layout' | 'content' | 'background' | 'theme'
-
-function displayTabs(t: Messages): { value: DisplayTabId; label: string }[] {
-  return [
-    { value: 'layout', label: t.display.tabLayout },
-    { value: 'content', label: t.display.tabContent },
-    { value: 'background', label: t.display.tabBackground },
-    { value: 'theme', label: t.display.tabTheme },
-  ]
-}
+import { IconCheck, IconClose, IconRestore } from './icons'
 
 function fitModes(t: Messages): { value: BackgroundFit; label: string }[] {
   return [
@@ -41,7 +29,7 @@ function fitModes(t: Messages): { value: BackgroundFit; label: string }[] {
   ]
 }
 
-function ResetDisplayTab({ onReset }: { onReset: () => void }) {
+function ResetDisplayTab({ onReset }: { onReset: () => void | Promise<void> }) {
   const { showToast } = useApp()
   const t = useMessages()
   return (
@@ -50,9 +38,13 @@ function ResetDisplayTab({ onReset }: { onReset: () => void }) {
       <button
         type="button"
         className="bnt-btn-ghost"
-        onClick={() => {
-          onReset()
-          showToast(t.display.resetDone)
+        onClick={async () => {
+          try {
+            await onReset()
+            showToast(t.display.resetDone)
+          } catch (error) {
+            showToast(t.settings.saveFailed(error instanceof Error ? error.message : String(error)))
+          }
         }}
       >
         {t.display.resetTab}
@@ -88,7 +80,7 @@ function FrameworkSetting({
   )
 }
 
-function LayoutDisplayTab() {
+export function LayoutDisplayTab() {
   const { settings } = useApp()
   const t = useMessages()
   const { layout } = settings
@@ -189,7 +181,7 @@ function LayoutDisplayTab() {
   )
 }
 
-function ContentDisplayTab() {
+export function ContentDisplayTab() {
   const { settings } = useApp()
   const t = useMessages()
   const { display } = settings
@@ -230,6 +222,25 @@ function ContentDisplayTab() {
         />
       </FrameworkSetting>
 
+      <div className="bnt-divider" />
+      <div className="bnt-group">
+        <div className="bnt-group-title">{t.settings.batchOpen}</div>
+        <NumberSetting
+          label={t.settings.batchOpenLabel}
+          value={settings.tabOpening.confirmThreshold}
+          min={0}
+          step={1}
+          unit={t.settings.batchOpenUnit}
+          onChange={(confirmThreshold) =>
+            updateSettings((prev) => ({
+              ...prev,
+              tabOpening: { ...prev.tabOpening, confirmThreshold },
+            }))
+          }
+        />
+        <div className="bnt-hint">{t.settings.batchOpenHint}</div>
+      </div>
+
       {/* 卡片染色跟着主题走(在主题页)，这里的重置就别越界去动它 */}
       <ResetDisplayTab
         onReset={() =>
@@ -245,6 +256,7 @@ function ContentDisplayTab() {
                 : prev.display.showFolderPath,
             },
             folder: supported('folderSetting') ? { ...DEFAULT_SETTINGS.folder } : prev.folder,
+            tabOpening: { ...DEFAULT_SETTINGS.tabOpening },
           }))
         }
       />
@@ -252,7 +264,7 @@ function ContentDisplayTab() {
   )
 }
 
-function BackgroundDisplayTab() {
+export function BackgroundDisplayTab() {
   const { settings } = useApp()
   const t = useMessages()
   const background = settings.background
@@ -296,17 +308,7 @@ function BackgroundDisplayTab() {
         />
       </div>
 
-      <div className="bnt-display-note">{t.display.wallpaperNote}</div>
 
-      <ResetDisplayTab
-        onReset={() =>
-          patch({
-            fit: DEFAULT_SETTINGS.background.fit,
-            blur: DEFAULT_SETTINGS.background.blur,
-            dim: DEFAULT_SETTINGS.background.dim,
-          })
-        }
-      />
     </>
   )
 }
@@ -445,13 +447,16 @@ function RecommendationList({
                     <>
                       <s>
                         {entry.color && <ColorDot value={entry.color.current} />}
-                        {entry.current}
+                        <span className="bnt-recommend-current" title={entry.current}>{entry.current}</span>
                       </s>
                       <span aria-hidden>→</span>
                     </>
                   )}
                   <b>
                     {entry.color && <ColorDot value={entry.color.next} />}
+                    {entry.background && (
+                      <span className="bnt-recommend-background" style={{ background: entry.background }} aria-hidden />
+                    )}
                     {entry.next}
                   </b>
                 </span>
@@ -465,9 +470,23 @@ function RecommendationList({
   )
 }
 
-function ThemeDisplayTab() {
+export function ThemeDisplayTab() {
   const { settings, askConfirm, showToast } = useApp()
   const t = useMessages()
+  const accentColors = useAccentPalette()
+  const paletteError = (error: unknown) => showToast(t.settings.saveFailed(error instanceof Error ? error.message : String(error)))
+  const removeColor = async (color: string) => {
+    try {
+      const index = accentColors.indexOf(color)
+      const remaining = await removeAccentColor(color)
+      // 删除正在使用的颜色时选中相邻项；色板清空时保留当前页面颜色，仍可重新添加。
+      updateSettings((prev) => prev.theme.accent.toLowerCase() === color && remaining.length
+        ? { ...prev, theme: { ...prev.theme, accent: remaining[Math.min(index, remaining.length - 1)] } }
+        : prev)
+    } catch (error) {
+      paletteError(error)
+    }
+  }
   const theme = getTheme(settings.theme.id)
   const tintSupported = supportsFrameworkSetting(theme, 'tintCards')
 
@@ -485,8 +504,10 @@ function ThemeDisplayTab() {
       message: <RecommendationList theme={target} entries={entries} selection={selection} />,
       confirmLabel: t.display.recommendApply,
       cancelLabel: t.display.recommendKeep,
-      onConfirm: () =>
-        updateSettings((prev) => applyThemeRecommendation(target, prev, selection.current)),
+      onConfirm: async () => {
+        if (selection.current.has('accent')) await addAccentColor(target.recommends.accent)
+        updateSettings((prev) => applyThemeRecommendation(target, prev, selection.current))
+      },
     })
   }
 
@@ -546,23 +567,32 @@ function ThemeDisplayTab() {
       <div className="bnt-group">
         <div className="bnt-group-title">{t.display.accent}</div>
         <div className="bnt-swatches">
-          {ACCENT_PRESETS.map((color) => (
-            <button
-              type="button"
-              key={color}
-              aria-label={color}
-              className={`bnt-swatch${color === settings.theme.accent ? ' is-on' : ''}`}
-              style={{ background: color, color }}
-              onClick={() =>
-                updateSettings((prev) => ({ ...prev, theme: { ...prev.theme, accent: color } }))
-              }
-            />
+          {accentColors.map((color) => (
+            <span className="bnt-accent-item" key={color}>
+              <button
+                type="button"
+                aria-label={color}
+                aria-pressed={color === settings.theme.accent.toLowerCase()}
+                className={`bnt-swatch${color === settings.theme.accent.toLowerCase() ? ' is-on' : ''}`}
+                style={{ background: color, color }}
+                onClick={() => updateSettings((prev) => ({ ...prev, theme: { ...prev.theme, accent: color } }))}
+              />
+              <button
+                type="button"
+                className="bnt-accent-remove"
+                aria-label={t.display.removeAccent(color)}
+                title={t.display.removeAccent(color)}
+                onClick={() => void removeColor(color)}
+              >
+                <IconClose size={11} />
+              </button>
+            </span>
           ))}
           <ColorField
             variant="custom"
             label={t.display.customAccent}
-            active={!ACCENT_PRESETS.includes(settings.theme.accent)}
             value={settings.theme.accent}
+            onCommit={(accent) => { void addAccentColor(accent).catch(paletteError) }}
             onChange={(accent) =>
               updateSettings((prev) => ({ ...prev, theme: { ...prev.theme, accent } }))
             }
@@ -671,7 +701,8 @@ function ThemeDisplayTab() {
 
       {/* 染色也在这一页，重置就得把它一起带上 */}
       <ResetDisplayTab
-        onReset={() =>
+        onReset={async () => {
+          await resetAccentPalette()
           updateSettings((prev) => ({
             ...prev,
             display: {
@@ -685,108 +716,8 @@ function ThemeDisplayTab() {
             },
             theme: structuredClone(DEFAULT_SETTINGS.theme),
           }))
-        }
+        }}
       />
     </>
-  )
-}
-
-const DISPLAY_TAB_CONTENT: Record<DisplayTabId, ComponentType> = {
-  layout: LayoutDisplayTab,
-  content: ContentDisplayTab,
-  background: BackgroundDisplayTab,
-  theme: ThemeDisplayTab,
-}
-
-export function DisplaySettingsPopover() {
-  const t = useMessages()
-  const [open, setOpen] = useState(false)
-  const [closing, setClosing] = useState(false)
-  const [tab, setTab] = useState<DisplayTabId>('layout')
-  const rootRef = useRef<HTMLDivElement>(null)
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const TabContent = DISPLAY_TAB_CONTENT[tab]
-
-  const finishClose = useCallback(() => {
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
-    closeTimerRef.current = null
-    setOpen(false)
-    setClosing(false)
-  }, [])
-
-  const close = useCallback(() => {
-    if (!open || closing) return
-    setClosing(true)
-    // animationend 正常负责卸载；定时器只在浏览器禁用动画等情况下兜底。
-    closeTimerRef.current = setTimeout(finishClose, 240)
-  }, [closing, finishClose, open])
-
-  const toggle = () => {
-    if (open) {
-      close()
-      return
-    }
-    setOpen(true)
-  }
-
-  useEffect(() => {
-    if (!open) return
-    const closeOutside = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) close()
-    }
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') close()
-    }
-    document.addEventListener('pointerdown', closeOutside)
-    document.addEventListener('keydown', closeOnEscape)
-    return () => {
-      document.removeEventListener('pointerdown', closeOutside)
-      document.removeEventListener('keydown', closeOnEscape)
-    }
-  }, [close, open])
-
-  useEffect(
-    () => () => {
-      if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
-    },
-    [],
-  )
-
-  return (
-    <div className="bnt-display-menu" ref={rootRef}>
-      <button
-        type="button"
-        className={`bnt-iconbtn bnt-iconbtn-lg bnt-display-trigger${open ? ' is-on' : ''}`}
-        title={t.display.title}
-        aria-label={t.display.title}
-        aria-haspopup="dialog"
-        aria-expanded={open && !closing}
-        aria-controls="bnt-display-popover"
-        onClick={toggle}
-      >
-        <IconSliders size={17} />
-      </button>
-
-      {open && (
-        <div
-          id="bnt-display-popover"
-          className={`bnt-popover bnt-glass bnt-display-popover${closing ? ' is-closing' : ''}`}
-          role="dialog"
-          aria-label={t.display.title}
-          onAnimationEnd={(event) => {
-            if (closing && event.currentTarget === event.target) finishClose()
-          }}
-        >
-          <div className="bnt-display-popover-head">
-            <div className="bnt-display-popover-tabs">
-              <Tabs value={tab} options={displayTabs(t)} onChange={setTab} />
-            </div>
-          </div>
-          <div className="bnt-display-popover-body" key={tab}>
-            <TabContent />
-          </div>
-        </div>
-      )}
-    </div>
   )
 }

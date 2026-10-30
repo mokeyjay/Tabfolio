@@ -1,88 +1,113 @@
-# Tabfolio
+<div align="center">
+  <img src="docs/images/logo.svg" width="88" height="88" alt="Tabfolio">
+  <h1>Tabfolio</h1>
+  <p>Your bookmarks, arranged your way.</p>
+  <p>
+    <img src="https://img.shields.io/badge/Chrome%20%2F%20Edge-114%2B-0071e3?logo=googlechrome&logoColor=white" alt="Chrome / Edge 114+">
+    <img src="https://img.shields.io/badge/Manifest-V3-0071e3" alt="Manifest V3">
+    <a href="LICENSE"><img src="https://img.shields.io/github/license/mokeyjay/Tabfolio?color=0071e3" alt="MIT License"></a>
+  </p>
+  <p><a href="README.md">简体中文</a> · <b>English</b></p>
+</div>
 
-**Your bookmarks, arranged your way.**
+<p align="center">
+  <img src="docs/images/1.jpg" width="880" alt="Tabfolio with the Frosted glass theme">
+</p>
 
-[简体中文](README.md) | English
+Tabfolio is a new tab extension for Chrome and Edge. It reads the bookmarks already in your browser and lays them out by folder on the new tab page. There is nothing to import and no account to create.
 
-Tabfolio is a free, open-source new tab extension for Chrome and Edge. It lays out the bookmarks you already have right on every new tab — no importing, no sign-up, it just works. With six distinct themes, wallpapers you can mix and match, and appearance settings down to each card, the page you open dozens of times a day finally feels like yours.
+Screenshots show the Chinese interface. The extension is fully available in English.
 
 ## Features
 
-### 🎨 Six themes — more than a color swap
+### 🎨 Six themes
 
-Every theme brings its own page layout, not just a new palette:
+Each theme has its own page layout, not just a different color scheme.
 
-| Theme | Best for |
-| --- | --- |
-| **Frosted glass** | Translucent panels over your wallpaper: folder tree on the left, bookmarks in the middle, activity on the right — everything on one screen |
-| **Acrylic** | A Windows 11–style tinted translucent material with wallpaper blur and fine grain |
-| **Paper** | An opaque paper ground holding your bookmarks, with depth from tone instead of blur — calm and easy on the eyes |
-| **Whitespace** | A clock and your bookmarks in a centered column — no panels, no cards, just breathing room and fine lines |
-| **Columns** | Drill down folder by folder like Finder — great for deeply nested collections |
-| **Columnar** | Spreads your folders out as newspaper-style sections so you can scan many at once |
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/images/1.jpg" alt="Frosted glass theme"><br><b>Frosted glass</b>: folder tree on the left, bookmarks in the middle, Most visited and Recently added on the right, on translucent panels over your wallpaper.</td>
+    <td width="50%" valign="top"><img src="docs/images/2.jpg" alt="Acrylic theme"><br><b>Acrylic</b>: the Windows 11 acrylic material, translucent with an accent tint and fine grain.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/images/3.jpg" alt="Paper theme"><br><b>Paper</b>: bookmarks sit on an opaque sheet, with layers told apart by shades of the background.</td>
+    <td width="50%" valign="top"><img src="docs/images/4.jpg" alt="Whitespace theme"><br><b>Whitespace</b>: a clock, a search box and your bookmarks in one centered column, with no panels or cards.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/images/5.jpg" alt="Columns theme"><br><b>Columns</b>: click down through folders as in Finder's column view. Good for deeply nested collections.</td>
+    <td width="50%" valign="top"><img src="docs/images/6.jpg" alt="Columnar theme"><br><b>Columnar</b>: several folders side by side in columns, so one screen shows the contents of many folders.</td>
+  </tr>
+</table>
 
-When you switch themes, Tabfolio lists the colors, corner radius, card size and other settings the theme recommends, and lets you tick the ones you want — nothing you've already tuned gets silently overwritten.
+When you switch themes, Tabfolio lists the colors, corner radius, card size and other settings the theme recommends. Only the items you tick are applied, so settings you have already adjusted stay as they are.
 
-### 📚 It's simply your browser bookmarks
+### 📚 Manage your browser bookmarks
 
-- **Nothing to import**: Tabfolio reads and writes your browser bookmarks directly — changes made here show up in the browser, and vice versa
-- **Drag to organize**: drag cards to reorder, drop them on a folder to move them in
-- **Right-click to edit**: change a name, URL or folder, delete a bookmark, or open a whole folder at once (with a confirmation if there are a lot)
-- **Pin a favorite folder**: make every new tab open straight to it
+- Drag cards to reorder them, or drop them on a folder to move them in
+- Right-click to change a name, URL or folder, delete a bookmark, or open a whole folder at once
+- Pin a folder you use often so every new tab opens on it
+- Every change is made to your browser bookmarks directly, so the browser's own bookmark manager stays in step
 
-### 🗂 Show folders the way you like
+### 🗂️ Folder display
 
-Subfolders can be **hidden**, shown **inline**, **pinned** to the top, or **expanded** in place — and you can set a different style for the next level down, up to five levels deep. Expand the folders you use every day, tuck away the rest, and keep the page as tidy as you want.
+Subfolders can be hidden, shown as usual, pinned to the top, or expanded in place. The next level down can have its own setting, up to five levels deep.
 
-### 🔍 Find anything, fast
+### 🔍 Search and frequent sites
 
-- Press **⌘K** (**Ctrl+K** on Windows) to search your bookmarks anytime, optionally within the current folder only
-- **Most visited** and **Recently added** get you back to your usual spots (Frosted glass, Acrylic and Paper themes)
-- Hold ⌘ / Ctrl while clicking to open a bookmark in a new tab
+- Press <kbd>⌘</kbd> <kbd>K</kbd> (<kbd>Ctrl</kbd> <kbd>K</kbd> on Windows and Linux) to search bookmark titles and URLs, optionally within the current folder only
+- The Frosted glass, Acrylic and Paper themes show Most visited and Recently added lists
+- Hold <kbd>⌘</kbd> or <kbd>Ctrl</kbd> while clicking a bookmark to open it in a new tab
 
-### 🖼 Wallpapers, however you like them
+### 🖼️ Wallpapers
 
-- **Built-in gradients**: crisp at any resolution, plus a gradient maker to craft your own
-- **Local and online images**: upload images or paste image URLs, and organize them into wallpaper folders
-- **Link a local folder**: pick an image folder on your computer and everything in it becomes a wallpaper
-- **Bing daily wallpaper**: a fresh image every day
-- **Rotation**: in order or at random, on a timer or with every new tab
-- **Effects**: blur, dimming, and cover / contain / stretch / tile fitting
+- A set of built-in gradients, plus a gradient editor for making your own
+- Upload local images or add image URLs, and sort them into folders
+- Link an image folder on your computer, then refresh it when files are added or removed
+- Bing daily wallpaper, which needs separate permission to access bing.com
+- Rotate in order or at random, on a timer or each time you open a new tab
+- Blur, dimming, and cover, contain, stretch or tile fitting
 
-### ✨ Every detail is yours to tweak
+<p align="center">
+  <img src="docs/images/8.jpg" width="880" alt="Background settings">
+</p>
 
-- Accent color, light / dark / follow system, corner radius, shadow strength
-- Card width and height, content width, and the transparency and blur of glass and acrylic surfaces
-- Replace any bookmark icon with an image of your choice; start a folder name with an emoji (like "📁 Work") and the emoji becomes its icon
-- Tint bookmark cards automatically with the main color of each site's icon
-- Power users can write **custom CSS** — every element has stable class names, so overrides are painless
+### ✨ Appearance
 
-### 🔒 Easy to sync, safe by design
+- Accent color, light or dark mode (or follow the system), corner radius and shadow
+- Card width and height, content width, and the transparency and blur of materials such as frosted glass and acrylic
+- Use your own image as a bookmark icon. If a folder name starts with an emoji, such as "📁 Work", that emoji becomes the folder icon
+- Tint bookmark cards automatically with the color of each site's icon
+- Custom CSS, with stable class names on interface elements
 
-- Sync your settings across devices through your browser account — or turn it off anytime
-- Tabfolio has no servers and **collects and uploads no data**, with no analytics and no ads
-- It requests no website access by default, so there's no "read your browsing history" warning at install
-- Images you upload stay on the device they came from
+<p align="center">
+  <img src="docs/images/7.jpg" width="880" alt="Theme settings">
+</p>
+
+### 🔒 Sync and privacy
+
+- Settings sync across devices through your browser account. You can turn this off in settings
+- The extension has no server of its own. Bookmarks, settings, local images and visit counts are never sent to the developer, and there are no analytics or ads
+- No website access is requested by default. Showing site icons needs the `favicon` permission, which may cause the browser to show a warning about browsing history, but the extension does not read your history
+- Most visited only counts bookmarks opened through Tabfolio, and the counts stay on your device
+- Local images are stored only on the current device and are not synced
 
 See the [privacy policy](PRIVACY.md) for details.
 
-### 🌐 English and Chinese
+### 🌐 Languages
 
-The interface follows your browser language by default, and you can switch it in settings.
+English and Simplified Chinese. The interface follows your browser language by default, and you can change it in settings.
 
 ## Installation
 
-**Requirements**: Chrome or Edge 114 or later.
+Requires Chrome or Edge 114 or later.
 
-**Manual install**:
+1. Download the latest `tabfolio-x.x.x.zip` from [Releases](../../releases) and unzip it
+2. Open `chrome://extensions` (`edge://extensions` in Edge) and turn on Developer mode
+3. Click "Load unpacked" and select the unzipped folder
 
-1. Download the latest `tabfolio-x.x.x.zip` from [Releases](../../releases) and unzip it (or build it yourself as described below)
-2. Open `chrome://extensions` (`edge://extensions` in Edge) and turn on **Developer mode**
-3. Click **Load unpacked** and select the unzipped folder
+When you open a new tab, the browser may ask whether to keep the change made by the extension. Choose to keep it. On first use, Tabfolio shows a data handling notice and only reads your bookmarks after you agree.
 
-When you open a new tab after installing, your browser may ask whether to keep the extension's change to the new tab page — choose to keep it.
-
-## Building and development
+## Development
 
 Requires Node.js 18 or later.
 
@@ -91,16 +116,15 @@ npm install
 npm run dev
 ```
 
-`npm run dev` starts a regular web page (http://localhost:5173/newtab.html). There's no `chrome.*` API there, so the extension automatically falls back to in-memory sample bookmarks and `localStorage` — you can work on the entire UI without installing the extension.
+Then open http://localhost:5173/newtab.html. A regular web page has no `chrome.*` API, so the page switches to built-in sample bookmarks and `localStorage`. You can work on the interface without installing the extension.
 
-| Command | What it does |
+| Command | Description |
 | --- | --- |
 | `npm run dev` | Start the dev server |
-| `npm run build` | Build the extension into `dist/`, ready to load as an unpacked extension |
+| `npm run build` | Build into `dist/`, which can be loaded directly as an unpacked extension |
 | `npm run watch` | Rebuild `dist/` whenever the code changes |
-| `npm run pack` | Build and package a store-ready zip into `release/` |
+| `npm run pack` | Build and package a zip into `release/` |
 | `npm run typecheck` | Run the type checker |
-
 
 ## License
 

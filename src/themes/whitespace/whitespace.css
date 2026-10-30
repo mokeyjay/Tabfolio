@@ -72,7 +72,8 @@
  * 文字直接落在壁纸上时，强制深色方案 + 浅色壁纸会完全失去对比。
  * 用当前纸色做主题级衬底，不改用户的全局壁纸压暗偏好；深色档自动稍重一层。
  */
-.bnt-whitespace-layout::before {
+.bnt-whitespace-layout::before,
+:where(:root[data-theme='whitespace']) .bnt-privacy::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -387,7 +388,7 @@
   transform-origin: bottom right;
 }
 
-/* 弹层是纸面，不再执行毛玻璃采样。 */
+/* 弹层是纸面，不做毛玻璃采样。 */
 :root[data-theme='whitespace'] .bnt-glass,
 :root[data-theme='whitespace'] .bnt-iconbtn-lg {
   backdrop-filter: none;

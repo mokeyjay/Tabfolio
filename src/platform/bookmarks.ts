@@ -2,7 +2,7 @@ import type { BookmarkNode } from '../types'
 import { normalizeUrl } from '../utils/url'
 import { isExtension } from './env'
 import { messages } from '../i18n'
-import { MOCK_TREE } from './mockBookmarks'
+import { createMockTree } from './mockBookmarks'
 
 type Raw = chrome.bookmarks.BookmarkTreeNode
 
@@ -52,7 +52,8 @@ const chromeApi: BookmarksApi = {
 }
 
 /** 开发环境的内存实现，行为对齐 chrome.bookmarks 的语义(含 index 重排) */
-const mockApi: BookmarksApi = (() => {
+const mockApi: BookmarksApi | undefined = import.meta.env.DEV ? (() => {
+  const MOCK_TREE = createMockTree()
   const listeners = new Set<() => void>()
   let nextId = 10000
   const emit = () => listeners.forEach((cb) => cb())
@@ -140,9 +141,10 @@ const mockApi: BookmarksApi = (() => {
       return () => listeners.delete(cb)
     },
   }
-})()
+})() : undefined
 
-export const bookmarksApi: BookmarksApi = isExtension ? chromeApi : mockApi
+// 示例书签仅供开发网页使用，正式扩展包由构建器移除整段 Mock 实现。
+export const bookmarksApi: BookmarksApi = isExtension ? chromeApi : (mockApi ?? chromeApi)
 
 /**
  * 把 chrome 返回的原始树转成带 path / key / count 的归一化树。

@@ -1,27 +1,12 @@
 import type { FolderDisplaySetting, Settings, Wallpaper } from '../types'
-import { pack, unpack, type Migrations, type Versioned } from './versioning'
+import { pack, unpack, type Versioned } from './versioning'
+import { THEME_BACKGROUNDS } from '../themes/backgrounds'
 
 /**
  * 设置的持久化结构版本。同步的那一半(`settings`)和本机的那一半(`backgroundLocal`)
  * 共用这一个版本号 —— 它们本来就是同一份 Settings 拆开存的。
- *
- * 改动持久化结构(增删字段、改名、改取值含义)时：
- * 1. 这里加一；
- * 2. 在 SHARED_MIGRATIONS(以及 machineBackground.ts 的 MACHINE_MIGRATIONS，
- *    如果本机那一半也变了)里补一条「上一版 -> 这一版」；
- * 3. 同步修改 DEFAULT_SETTINGS、types.ts 和 parseSettings 的校验。
- *
- * 只加字段也要升版本、写迁移补默认值：parseSettings 要求当前版本的字段齐全，
- * 缺字段的数据会被当作损坏。
  */
 export const SETTINGS_VERSION = 1
-
-/**
- * 同步那一半设置的迁移表。key 是目标版本，示例：
- *
- *   2: (v1) => ({ ...v1, display: { ...(v1.display as object), compact: false } }),
- */
-export const SHARED_MIGRATIONS: Migrations = {}
 
 /** 目录展示方案的递归深度上限，防止用户把 child 套到天上去 */
 export const MAX_FOLDER_DEPTH = 5
@@ -49,6 +34,7 @@ export const PRESET_WALLPAPERS: Wallpaper[] = [
   { id: 'sand', kind: 'preset', name: '沙丘', parentId: null, order: 4, css: 'radial-gradient(120% 100% at 20% 20%,#f6ecdd 0%,#e8dcc9 50%,#d5c8b6 100%)' },
   { id: 'ink', kind: 'preset', name: '墨蓝', parentId: null, order: 5, css: 'radial-gradient(120% 100% at 60% 10%,#bfd2ee 0%,#93aede 50%,#6b8ac9 100%)' },
   { id: 'paper', kind: 'preset', name: '素纸', parentId: null, order: 6, css: 'linear-gradient(180deg,#f7f8fa 0%,#eceef2 100%)' },
+  ...Object.values(THEME_BACKGROUNDS),
 ]
 
 export const DEFAULT_FOLDER_SETTING: FolderDisplaySetting = {
@@ -157,8 +143,6 @@ export function parseSettings(raw: unknown): Settings | null {
 
 export interface StoredSettings {
   settings: Settings
-  /** 刚从旧版本迁移上来，调用方应尽快写回当前版本 */
-  migrated: boolean
   /**
    * 存储里是更新版本的扩展写的。能解析出来就先照着显示，但在本扩展更新之前
    * 不能写回 —— 旧结构会把新版本的数据冲掉。
@@ -166,22 +150,21 @@ export interface StoredSettings {
   newer: boolean
 }
 
-/** 从存储里的原始值还原同步那一半设置；没有、损坏或迁移失败时回落到默认设置 */
+/** 从存储里的原始值还原同步那一半设置；没有或无效时回落到默认设置。 */
 export function readStoredSettings(raw: unknown): StoredSettings {
-  const unpacked = unpack(raw, SETTINGS_VERSION, SHARED_MIGRATIONS)
+  const unpacked = unpack(raw, SETTINGS_VERSION)
   const fallback = () => structuredClone(DEFAULT_SETTINGS)
   switch (unpacked.status) {
     case 'empty':
     case 'invalid':
-      return { settings: fallback(), migrated: false, newer: false }
+      return { settings: fallback(), newer: false }
     case 'current':
       return {
         settings: parseSettings(unpacked.data) ?? fallback(),
-        migrated: unpacked.migrated,
         newer: false,
       }
     case 'newer':
-      return { settings: parseSettings(unpacked.data) ?? fallback(), migrated: false, newer: true }
+      return { settings: parseSettings(unpacked.data) ?? fallback(), newer: true }
   }
 }
 

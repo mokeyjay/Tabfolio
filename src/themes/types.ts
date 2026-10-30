@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 import type { Messages } from '../i18n/en'
-import type { FolderDisplaySetting, Settings } from '../types'
+import type { FolderDisplaySetting, PresetWallpaper, Settings } from '../types'
 
 /** 文案不写死在主题里，渲染时按当前语言取 */
 type Label = (t: Messages) => string
@@ -50,9 +50,11 @@ export type ThemeOptionDef =
  * 用户，勾哪项应用哪项(见 themes/preset.ts)，一项都不勾就等于什么都没动。
  *
  * 主色列在这里不代表它归主题所有：它照旧是全局设置，只有用户勾了才会被换掉。
- * 明暗方案和壁纸连推荐都不给 —— 那是环境和个人偏好，跟主题气质无关。
+ * 背景也列入可选推荐项；明暗方案仍由用户独立决定。
  */
 export interface ThemeRecommendation {
+  /** 推荐的 CSS 背景，仅在用户勾选后应用。 */
+  background: PresetWallpaper
   /** 面板圆角，px */
   radius: number
   /** 阴影浓度，% */

@@ -63,7 +63,7 @@
   --bnt-danger-soft: rgba(208, 2, 27, 0.07);
 
   /*
-   * 圆角是全局设置(App.tsx 挂 --bnt-radius-*)，主题不再自己定；阴影这边只出配方 ——
+   * 圆角是全局设置(App.tsx 挂 --bnt-radius-*)，主题不另行设定；阴影这边只出配方 ——
    * 投影色 --bnt-shadow-ink 和相对浓度 --bnt-shadow-depth 是主题的事，整体浓淡
    * 由全局滑块的 --bnt-shadow-k 统一缩放，两者的乘积就是 --bnt-shadow-a。
    */

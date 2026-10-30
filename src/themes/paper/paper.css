@@ -87,7 +87,8 @@
  * 和 acrylic 一样用伪元素：.bnt-app 自己是 z-index:1 的层叠上下文，伪元素的 -1
  * 只压在它自己的内容之下，仍然盖得住 z-index:0 的 .bnt-bg。
  */
-.bnt-paper-layout::before {
+.bnt-paper-layout::before,
+:where(:root[data-theme='paper']) .bnt-privacy::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -155,7 +156,7 @@
 
 /*
  * 内容区整块变成一张纸：标题、面包屑、卡片都在纸里面。
- * 高度改成按内容撑开(上限一屏)，纸就会随书签多少收放，而不是永远铺满整屏。
+ * 高度按内容撑开(上限一屏)，纸就会随书签多少收放，而不是永远铺满整屏。
  */
 :root[data-theme='paper'] .bnt-content {
   height: auto;
@@ -176,6 +177,11 @@
   margin-top: 0;
   /* 空目录时纸会缩成一条，给空状态(绝对定位)留出地方 */
   min-height: 128px;
+}
+
+/* 纸张本身是一块有边界的面板，不跟着书签列表延伸到视口底边 */
+:root[data-theme='paper'] .bnt-main {
+  margin-bottom: 0;
 }
 
 /* 纸自己有内边距，滚动区就不必再靠负 margin 去偷边上那几个像素 */

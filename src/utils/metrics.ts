@@ -5,7 +5,7 @@ import type { Settings } from '../types'
  * 圆角只有「面板圆角」一个自由变量，控件和卡片都从它推出来 ——
  * 一根滑块就能让整套界面的圆润程度保持同一个调子。
  *
- * 0.68 这个比例是照着原来各处硬写的数值反推的：面板 16px 时控件恰好落在 11px。
+ * 控件取面板的 0.68 倍：面板 16px 时控件恰好落在 11px。
  */
 export function radiusMetrics(radius: number) {
   const px = (n: number) => `${Math.round(n * 2) / 2}px`

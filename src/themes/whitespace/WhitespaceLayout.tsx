@@ -13,7 +13,7 @@ import { useCardTint } from '../../hooks/useCardTint'
 import { hexToRgb } from '../../utils/color'
 import { useMessages, type Messages } from '../../i18n'
 import { BookmarkIcon } from '../../components/BookmarkIcon'
-import { DisplaySettingsPopover } from '../../components/DisplaySettingsPopover'
+import { SettingsButton } from '../../components/SettingsButton'
 import { SlidingGroup } from '../../components/ui'
 import {
   IconClear,
@@ -21,7 +21,6 @@ import {
   IconFolderOutline,
   IconGlobal,
   IconSearch,
-  IconSettings,
 } from '../../components/icons'
 
 function scopeOptions(t: Messages) {
@@ -359,7 +358,7 @@ function WhitespaceContent({ tabs }: { tabs: BookmarkNode[] }) {
 
 /** 留白骨架：时钟、细线搜索、一级目录文字导航与窄栏书签列表。 */
 export function WhitespaceLayout() {
-  const { root, setSettingsOpen } = useApp()
+  const { root } = useApp()
   const t = useMessages()
   const tabs = useMemo(
     () => (root.children ?? []).flatMap((rootFolder) =>
@@ -384,16 +383,7 @@ export function WhitespaceLayout() {
       </div>
 
       <div className="bnt-whitespace-actions">
-        <DisplaySettingsPopover />
-        <button
-          type="button"
-          className="bnt-iconbtn bnt-iconbtn-lg"
-          title={t.sidebar.settings}
-          aria-label={t.sidebar.settings}
-          onClick={() => setSettingsOpen(true)}
-        >
-          <IconSettings size={17} />
-        </button>
+        <SettingsButton />
       </div>
     </div>
   )

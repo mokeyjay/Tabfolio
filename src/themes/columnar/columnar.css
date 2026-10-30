@@ -64,7 +64,8 @@
   padding: 0;
 }
 
-.bnt-columnar-layout::before {
+.bnt-columnar-layout::before,
+:where(:root[data-theme='columnar']) .bnt-privacy::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -358,11 +359,8 @@ button.bnt-columnar-section-name:hover,
   .bnt-columnar-toolbar-spacer {
     order: 3;
   }
-  .bnt-columnar-toolbar > .bnt-display-menu {
+  .bnt-columnar-toolbar > .bnt-settings-trigger {
     order: 4;
-  }
-  .bnt-columnar-settings {
-    order: 5;
   }
   .bnt-columnar-search-wrap {
     order: 6;

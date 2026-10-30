@@ -76,14 +76,17 @@ function inRibbon(x, y) {
 
 function render(size) {
   const px = Buffer.alloc(size * size * 4)
+  // 商店的方形图标在 128 像素画布内保留每边 16 像素透明留白。
+  const inset = size === 128 ? 16 : 0
+  const artworkSize = size - inset * 2
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       let bg = 0
       let fg = 0
       for (let sy = 0; sy < SS; sy++) {
         for (let sx = 0; sx < SS; sx++) {
-          const u = (x + (sx + 0.5) / SS) / size
-          const v = (y + (sy + 0.5) / SS) / size
+          const u = (x + (sx + 0.5) / SS - inset) / artworkSize
+          const v = (y + (sy + 0.5) / SS - inset) / artworkSize
           if (inRoundedRect(u, v, 0.22)) {
             bg++
             if (inRibbon(u, v)) fg++

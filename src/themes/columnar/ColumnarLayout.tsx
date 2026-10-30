@@ -10,14 +10,13 @@ import type { BookmarkNode, SearchScope } from '../../types'
 import { useApp } from '../../app/AppContext'
 import { IntoZone, useDrag } from '../../app/DragProvider'
 import { BookmarkIcon } from '../../components/BookmarkIcon'
-import { DisplaySettingsPopover } from '../../components/DisplaySettingsPopover'
+import { SettingsButton } from '../../components/SettingsButton'
 import { SlidingGroup } from '../../components/ui'
 import {
   IconClear,
   IconFolderOutline,
   IconGlobal,
   IconSearch,
-  IconSettings,
 } from '../../components/icons'
 import { updateSettings } from '../../state/settingsStore'
 import { displayDomain } from '../../utils/url'
@@ -277,7 +276,7 @@ function SearchSection({ items, query }: { items: BookmarkNode[]; query: string 
 
 /** 分栏骨架：把每个目录的直属书签摊成报刊式栏目 */
 export function ColumnarLayout() {
-  const { settings, root, query, searchResults, selectFolder, setSettingsOpen } = useApp()
+  const { settings, root, query, searchResults, selectFolder } = useApp()
   const t = useMessages()
   const options = settings.theme.options.columnar
   const rows = Math.min(12, Math.max(4, Number(options?.rows ?? 6)))
@@ -297,16 +296,7 @@ export function ColumnarLayout() {
           <span className="bnt-columnar-total">{t.sidebar.total(root.count)}</span>
           <span className="bnt-columnar-toolbar-spacer" />
           <ColumnarSearch />
-          <DisplaySettingsPopover />
-          <button
-            type="button"
-            className="bnt-iconbtn bnt-columnar-settings"
-            title={t.sidebar.settings}
-            aria-label={t.sidebar.settings}
-            onClick={() => setSettingsOpen(true)}
-          >
-            <IconSettings size={16} />
-          </button>
+          <SettingsButton />
         </header>
 
         <main className="bnt-columnar-main">
